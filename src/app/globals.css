@@ -1,26 +1,54 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  /* Fonts */
+  --font-outfit: 'Outfit', sans-serif;
+  --font-rubik: 'Rubik', sans-serif;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Urban Calm Color Palette */
+  --color-primary: #1E3A8A;         /* Midnight Blue */
+  --color-secondary: #60A5FA;       /* Sky Blue */
+  --color-accent: #10B981;          /* Emerald Green */
+  --color-error: #EF4444;           /* Soft Red */
+  --color-bg-light: #F3F4F6;        /* Light Gray */
+  --color-surface: #FFFFFF;         /* White surface */
+  --color-text-primary: #111827;    /* Slate Black */
+  --color-text-secondary: #6B7280;  /* Cool Gray */
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-rubik);
+  background-color: var(--color-bg-light);
+  color: var(--color-text-primary);
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
 }
+
+h1, h2, h3 {
+  font-family: var(--font-outfit);
+  color: var(--color-primary);
+  margin-top: 0;
+}
+
+button {
+  background-color: var(--color-secondary); /* Sky Blue */
+  color: var(--color-surface);              /* White text */
+  border: none;
+  padding: 0.6rem 1.2rem;
+  font-weight: 500;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+button:hover {
+  background-color: var(--color-accent); /* Emerald on hover */
+}
+
+button:active {
+  transform: translateY(1px);
+  opacity: 0.95;
+}
+
