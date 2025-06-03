@@ -11,4 +11,21 @@ This project is organized into different branches:
 
 ## Getting Started
 
-Please refer to the respective plan branches for detailed implementation details. 
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+**Save the README file after editing.**
+
+ **Check git status** in your terminal to see if the conflict is resolved:
+
+```bash
+git status
