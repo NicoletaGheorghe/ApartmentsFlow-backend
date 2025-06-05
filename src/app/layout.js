@@ -3,6 +3,7 @@ import "./globals.css";
 
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
+import { AuthProvider } from "./context/AuthContext";
 
 
 const geistSans = Geist({
@@ -24,10 +25,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-      <div className="min-h-screen flex flex-col">
-          <Header />
-          <main>{children}</main>
+      <AuthProvider>
+        <div className="min-h-screen flex flex-col">
+            <Header />
+            <main>{children}</main>
         </div>
+      </AuthProvider>  
       </body>
     </html>
   );
