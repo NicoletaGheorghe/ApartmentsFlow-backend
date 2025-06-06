@@ -1,5 +1,5 @@
 import axios from "axios";
-const url = "http://localhost:3001";
+const url = "http://localhost:3000/api";
 
 
 export class ApiClient {
@@ -27,7 +27,7 @@ export class ApiClient {
                 if (error.response && error.response.status === 401) {
                 this.removeToken();
                 if (typeof window !== 'undefined') {
-                    window.location.href = '/unauthorized';
+                    window.location.href = '/auth/unauthorized';
                 }
                 }
                 return Promise.reject(error);
@@ -71,11 +71,11 @@ export class ApiClient {
             });
             return response;
             } catch (error) {
-            console.error('API call error:', error.response || error); 
+            console.error('API call error:', error.response?.data || error.message || error); 
             if (error.response && error.response.status === 401) {
                 this.removeToken();
                 if (typeof window !== 'undefined') {
-                window.location.href = 'auth/unauthorized';
+                window.location.href = '/auth/unauthorized';
                 }
             }
             throw error;
@@ -83,22 +83,15 @@ export class ApiClient {
         }
        async login(email, password) {
             try {
-                // const response = await this.apiCall("post", url + "auth/login", { email, password });
+                const response = await this.apiCall("post", url + "/auth/login", { email, password });
                 
-                // if (response.data && response.data.token) {
-                //     this.setToken(response.data.token);
-                //     return response;
-                // } else {
-                //     throw new Error('No token received from server');
-                // }
-                //mock: fake login for login/logout testing purposes(remove when real API is connected)
-                if (email === "admin@example.com" && password === "123456") {
-                    const fakeToken = "fake-jwt-token";
-                    this.setToken(fakeToken);
-                    return { data: { token: fakeToken } };
+                if (response.data && response.data.token) {
+                    this.setToken(response.data.token);
+                    return response;
                 } else {
-                    throw new Error("Invalid credentials");
-      }
+                    throw new Error('No token received from server');
+                }
+        
             } catch (error) {
                 throw error;
                 }
@@ -108,7 +101,7 @@ export class ApiClient {
            const token = this.getToken();
             try {
                 if (token) {
-                    await this.apiCall('post', url + "auth/logout", {token});
+                    await this.apiCall("post", url + "/auth/logout", {token});
                 }
             }catch (error) {
                 console.error('Logout error:', error?.response?.data || error.message);
@@ -119,4 +112,19 @@ export class ApiClient {
             }
           } 
  } 
+       async register(name, email, password) {
+          try {
+            const response = await this.apiCall("post", url + "/auth/register", { name, email, password });
+          if (response.data && response.data.token) {
+                    this.setToken(response.data.token);
+                    return response;
+                } else {
+                    throw new Error('No token received from server');
+                }
+        
+            } catch (error) {
+                throw error;
+                }
+
+       }
 }

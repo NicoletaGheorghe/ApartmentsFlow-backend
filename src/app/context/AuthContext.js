@@ -13,6 +13,11 @@ export const AuthProvider =({ children }) => {
         setIsLoggedIn(apiClient.isLoggedIn());
         setLoading(false);
 }, []);
+    const register = async (name, email, password) => {
+        const response = await apiClient.register(name, email, password);
+        setIsLoggedIn(true);
+        return response;
+    }
     const login = async (email, password) => {
         const response = await apiClient.login(email, password);
         setIsLoggedIn(true);
@@ -23,7 +28,7 @@ export const AuthProvider =({ children }) => {
         setIsLoggedIn(false);
     };
     return (
-        <AuthContext.Provider value={{ isLoggedIn, login, logout, loading}}>
+        <AuthContext.Provider value={{ isLoggedIn, register, login, logout, loading}}>
             {!loading && children}
         </AuthContext.Provider>
     );
