@@ -127,4 +127,50 @@ export class ApiClient {
                 }
 
        }
+       async createApartment(
+        title,
+        description,
+        price,
+        location,
+        bedrooms,
+        bathrooms,
+        area,
+        amenities,
+        images,
+        status
+       ) {
+        try {
+            const numericPrice = Number(price);
+            const numericBedrooms = Number(bedrooms);
+            const numericBathrooms = Number(bathrooms);
+            const numericArea = Number(area);
+            if (isNaN(numericPrice)) {
+                throw new Error("Price must be a valid number.");
+            }
+            if (isNaN(numericBedrooms)) {
+                throw new Error("Bedrooms must be a valid number.");
+            }
+            if (isNaN(numericBathrooms)) {
+                throw new Error ("Bathrooms must be a valid number.");
+            }
+            if (isNaN(numericArea)) {
+                throw new Error ("Area must be a valid number.");
+            }
+            return this.apiCall("post", url + "/apartments", {
+                title,
+                description,
+                price : numericPrice,
+                location,
+                bedrooms: numericBedrooms,
+                bathrooms: numericBathrooms,
+                area: numericArea,
+                amenities,
+                images,
+                status
+            });
+        } catch (error) {
+            console.error("addAd error:", error.response || error); 
+            throw error;
+            }
+       }
 }
