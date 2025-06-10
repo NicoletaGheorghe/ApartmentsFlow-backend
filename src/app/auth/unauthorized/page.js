@@ -6,7 +6,7 @@ export default function UnauthorizedPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg-light)] ">
-        <div className="bg-white/50 dark:bg-gray-700/50 p-8 rounded-xl shadow-md w-full max-w-md text-center">
+        <div className="bg-white/50 p-8 rounded-xl shadow-md w-full max-w-md text-center">
         <h1 className="text-2xl font-bold text-[var(--color-error)] mb-4">
           Unauthorized Access
         </h1>

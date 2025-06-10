@@ -44,7 +44,7 @@ button {
 }
 
 button:hover {
-  background-color: var(--color-accent); /* Emerald on hover */
+  background-color: var(--color-primary); /* Emerald on hover */
 }
 
 button:active {
