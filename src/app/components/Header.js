@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import Image from "next/image";
 
