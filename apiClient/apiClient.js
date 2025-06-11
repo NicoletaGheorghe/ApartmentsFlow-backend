@@ -173,4 +173,12 @@ export class ApiClient {
             throw error;
             }
        }
+       async getApartments() {
+            try {
+            const response = await this.apiCall("get", url + "/apartments");
+            return response;
+            } catch (error) {
+            throw error;
+            }
+        }
 }
