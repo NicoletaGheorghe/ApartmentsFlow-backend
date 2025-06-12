@@ -8,7 +8,7 @@ process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = 'test-secret';
 process.env.JWT_EXPIRATION_INTERVAL = '1h';
 
-// Mock only what's necessary
+// Mock necessary modules
 jest.mock('axios');
 jest.mock('jwt-simple');
 jest.mock('passport-jwt');
@@ -24,22 +24,26 @@ global.console = {
   error: jest.fn(),
   warn: jest.fn(),
   info: jest.fn(),
-  debug: jest.fn(),
 };
 
-// Setup MongoDB Memory Server
+// Global setup - runs once before all test files
 beforeAll(async () => {
+  // Create a new MongoDB Memory Server instance
   mongod = await MongoMemoryServer.create();
   const uri = mongod.getUri();
-  process.env.MONGODB_URI = uri;
+
+  // Connect to the in-memory database
   await mongoose.connect(uri);
 });
 
-// Cleanup after all tests
+// Global teardown - runs once after all test files
 afterAll(async () => {
+  // Disconnect from the in-memory database
   if (mongoose.connection.readyState !== 0) {
     await mongoose.disconnect();
   }
+
+  // Stop the MongoDB Memory Server
   if (mongod) {
     await mongod.stop();
   }
