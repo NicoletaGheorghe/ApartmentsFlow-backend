@@ -4,6 +4,7 @@ const { protect } = require('../middleware/auth.middleware');
 const {
   getProfile,
   updateProfile,
+  deleteProfile,
   updatePreferences,
   getSavedSearches,
   saveSearch,
@@ -12,12 +13,13 @@ const {
   getApartmentNotes,
   addApartmentNote,
   updateApartmentNote,
-  deleteApartmentNote
+  deleteApartmentNote,
 } = require('../controllers/user.controller');
 
 // Profile routes
 router.get('/profile', protect, getProfile);
 router.put('/profile', protect, updateProfile);
+router.delete('/profile', protect, deleteProfile);
 
 // Preferences routes
 router.get('/preferences', protect, updatePreferences);
@@ -35,4 +37,4 @@ router.post('/apartments/:id/notes', protect, addApartmentNote);
 router.put('/apartments/:id/notes/:noteId', protect, updateApartmentNote);
 router.delete('/apartments/:id/notes/:noteId', protect, deleteApartmentNote);
 
-module.exports = router; 
+module.exports = router;

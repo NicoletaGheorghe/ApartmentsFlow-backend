@@ -18,7 +18,7 @@ const getProfile = async (req, res, next) => {
 // @access  Private
 const updateProfile = async (req, res, next) => {
   try {
-    const { name, email, phone, bio } = req.body;
+    const { name, email, phone, bio, profileImage } = req.body;
 
     // Build update object
     const updateFields = {};
@@ -26,14 +26,26 @@ const updateProfile = async (req, res, next) => {
     if (email) updateFields.email = email;
     if (phone) updateFields.phone = phone;
     if (bio) updateFields.bio = bio;
+    if (profileImage) updateFields.profileImage = profileImage;
 
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      updateFields,
-      { new: true, runValidators: true }
-    ).select('-password');
+    const user = await User.findByIdAndUpdate(req.user._id, updateFields, {
+      new: true,
+      runValidators: true,
+    }).select('-password');
 
     res.json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete user profile
+// @route   DELETE /api/users/profile
+// @access  Private
+const deleteProfile = async (req, res, next) => {
+  try {
+    await User.findByIdAndDelete(req.user._id);
+    res.json({ message: 'User deleted successfully' });
   } catch (error) {
     next(error);
   }
@@ -107,11 +119,10 @@ const deleteSavedSearch = async (req, res, next) => {
 // @access  Private
 const getFavoriteApartments = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id)
-      .populate({
-        path: 'apartmentNotes.apartment',
-        select: 'title price location bedrooms bathrooms area amenities images'
-      });
+    const user = await User.findById(req.user._id).populate({
+      path: 'apartmentNotes.apartment',
+      select: 'title price location bedrooms bathrooms area amenities images',
+    });
 
     res.json(user.apartmentNotes);
   } catch (error) {
@@ -126,7 +137,7 @@ const getApartmentNotes = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id);
     const apartmentNotes = user.apartmentNotes.find(
-      note => note.apartment.toString() === req.params.id
+      (note) => note.apartment.toString() === req.params.id
     );
 
     if (!apartmentNotes) {
@@ -151,7 +162,7 @@ const addApartmentNote = async (req, res, next) => {
 
     const user = await User.findById(req.user._id);
     const apartmentNotes = user.apartmentNotes.find(
-      note => note.apartment.toString() === req.params.id
+      (note) => note.apartment.toString() === req.params.id
     );
 
     if (apartmentNotes) {
@@ -159,7 +170,7 @@ const addApartmentNote = async (req, res, next) => {
     } else {
       user.apartmentNotes.push({
         apartment: req.params.id,
-        notes: [{ content: req.body.content }]
+        notes: [{ content: req.body.content }],
       });
     }
 
@@ -177,7 +188,7 @@ const updateApartmentNote = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id);
     const apartmentNotes = user.apartmentNotes.find(
-      note => note.apartment.toString() === req.params.id
+      (note) => note.apartment.toString() === req.params.id
     );
 
     if (!apartmentNotes) {
@@ -206,7 +217,7 @@ const deleteApartmentNote = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id);
     const apartmentNotes = user.apartmentNotes.find(
-      note => note.apartment.toString() === req.params.id
+      (note) => note.apartment.toString() === req.params.id
     );
 
     if (!apartmentNotes) {
@@ -214,7 +225,7 @@ const deleteApartmentNote = async (req, res, next) => {
     }
 
     apartmentNotes.notes = apartmentNotes.notes.filter(
-      note => note._id.toString() !== req.params.noteId
+      (note) => note._id.toString() !== req.params.noteId
     );
 
     await user.save();
@@ -227,6 +238,7 @@ const deleteApartmentNote = async (req, res, next) => {
 module.exports = {
   getProfile,
   updateProfile,
+  deleteProfile,
   updatePreferences,
   getSavedSearches,
   saveSearch,
@@ -235,5 +247,5 @@ module.exports = {
   getApartmentNotes,
   addApartmentNote,
   updateApartmentNote,
-  deleteApartmentNote
-}; 
+  deleteApartmentNote,
+};

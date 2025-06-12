@@ -1,17 +1,12 @@
 const request = require('supertest');
+const mongoose = require('mongoose');
 const app = require('../app');
 const User = require('../models/user.model');
 const Apartment = require('../models/apartment.model');
-const mongoose = require('mongoose');
 
-let server;
 let testUser;
 
 beforeAll(async () => {
-  await mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
   // Create a test user
   testUser = await User.create({
     email: 'testuser@example.com',
@@ -25,12 +20,9 @@ beforeEach(async () => {
   await Apartment.deleteMany();
 });
 
-afterAll(async () => {
-  // Clean up test data
+afterEach(async () => {
   await User.deleteMany();
   await Apartment.deleteMany();
-  // Close the MongoDB connection
-  await mongoose.connection.close();
 });
 
 describe('App', () => {
