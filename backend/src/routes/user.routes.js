@@ -4,6 +4,7 @@ const { protect } = require('../middleware/auth.middleware');
 const {
   getProfile,
   updateProfile,
+  deleteProfile,
   updatePreferences,
   getSavedSearches,
   saveSearch,
@@ -12,8 +13,7 @@ const {
   getApartmentNotes,
   addApartmentNote,
   updateApartmentNote,
-  deleteApartmentNote,
-  deleteProfile
+  deleteApartmentNote
 } = require('../controllers/user.controller');
 
 // Profile routes

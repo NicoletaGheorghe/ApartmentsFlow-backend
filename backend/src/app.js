@@ -49,12 +49,14 @@ const authRoutes = require('./routes/auth.routes');
 const apartmentRoutes = require('./routes/apartment.routes');
 const favoriteRoutes = require('./routes/favorite.routes');
 const commuteRoutes = require('./routes/commute.routes');
+const userRoutes = require('./routes/user.routes');
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/apartments', apartmentRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/commute', commuteRoutes);
+app.use('/api/users', userRoutes);
 
 // Error handling middleware (from Express.js web-service example)
 app.use(function (err, req, res, next) {

@@ -18,7 +18,7 @@ const getProfile = async (req, res, next) => {
 // @access  Private
 const updateProfile = async (req, res, next) => {
   try {
-    const { name, email, phone, bio } = req.body;
+    const { name, email, phone, bio, profileImage } = req.body;
 
     // Build update object
     const updateFields = {};
@@ -26,6 +26,7 @@ const updateProfile = async (req, res, next) => {
     if (email) updateFields.email = email;
     if (phone) updateFields.phone = phone;
     if (bio) updateFields.bio = bio;
+    if (profileImage) updateFields.profileImage = profileImage;
 
     const user = await User.findByIdAndUpdate(
       req.user._id,
@@ -34,6 +35,23 @@ const updateProfile = async (req, res, next) => {
     ).select('-password');
 
     res.json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete user profile
+// @route   DELETE /api/users/profile
+// @access  Private
+const deleteProfile = async (req, res, next) => {
+  try {
+    // Delete user's apartments if they are the owner
+    await Apartment.deleteMany({ owner: req.user._id });
+    
+    // Delete the user
+    await User.findByIdAndDelete(req.user._id);
+    
+    res.json({ message: 'User profile deleted successfully' });
   } catch (error) {
     next(error);
   }
@@ -224,26 +242,10 @@ const deleteApartmentNote = async (req, res, next) => {
   }
 };
 
-// @desc    Delete user profile
-// @route   DELETE /api/users/profile
-// @access  Private
-const deleteProfile = async (req, res, next) => {
-  try {
-    // Delete user's apartments if they are the owner
-    await Apartment.deleteMany({ owner: req.user._id });
-    
-    // Delete the user
-    await User.findByIdAndDelete(req.user._id);
-    
-    res.json({ message: 'User profile deleted successfully' });
-  } catch (error) {
-    next(error);
-  }
-};
-
 module.exports = {
   getProfile,
   updateProfile,
+  deleteProfile,
   updatePreferences,
   getSavedSearches,
   saveSearch,
@@ -252,6 +254,5 @@ module.exports = {
   getApartmentNotes,
   addApartmentNote,
   updateApartmentNote,
-  deleteApartmentNote,
-  deleteProfile
+  deleteApartmentNote
 }; 
