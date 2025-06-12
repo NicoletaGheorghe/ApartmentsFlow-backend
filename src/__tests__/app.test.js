@@ -20,8 +20,7 @@ beforeEach(async () => {
   await Apartment.deleteMany();
 });
 
-afterAll(async () => {
-  // Clean up test data
+afterEach(async () => {
   await User.deleteMany();
   await Apartment.deleteMany();
 });
