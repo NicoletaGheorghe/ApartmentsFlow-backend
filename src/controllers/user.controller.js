@@ -168,6 +168,60 @@ const addApartmentNote = async (req, res, next) => {
   }
 };
 
+// @desc    Update apartment note
+// @route   PUT /api/users/apartments/:id/notes/:noteId
+// @access  Private
+const updateApartmentNote = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const apartmentNotes = user.apartmentNotes.find(
+      (note) => note.apartment.toString() === req.params.id
+    );
+
+    if (!apartmentNotes) {
+      return res.status(404).json({ error: 'Apartment notes not found' });
+    }
+
+    const note = apartmentNotes.notes.id(req.params.noteId);
+    if (!note) {
+      return res.status(404).json({ error: 'Note not found' });
+    }
+
+    note.content = req.body.content;
+    note.updatedAt = Date.now();
+
+    await user.save();
+    res.json(apartmentNotes.notes);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete apartment note
+// @route   DELETE /api/users/apartments/:id/notes/:noteId
+// @access  Private
+const deleteApartmentNote = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const apartmentNotes = user.apartmentNotes.find(
+      (note) => note.apartment.toString() === req.params.id
+    );
+
+    if (!apartmentNotes) {
+      return res.status(404).json({ error: 'Apartment notes not found' });
+    }
+
+    apartmentNotes.notes = apartmentNotes.notes.filter(
+      (note) => note._id.toString() !== req.params.noteId
+    );
+
+    await user.save();
+    res.json(apartmentNotes.notes);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
@@ -178,4 +232,6 @@ module.exports = {
   getFavoriteApartments,
   getApartmentNotes,
   addApartmentNote,
+  updateApartmentNote,
+  deleteApartmentNote,
 };
