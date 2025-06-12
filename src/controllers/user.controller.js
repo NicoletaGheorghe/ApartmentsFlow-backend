@@ -18,7 +18,7 @@ const getProfile = async (req, res, next) => {
 // @access  Private
 const updateProfile = async (req, res, next) => {
   try {
-    const { name, email, phone, bio } = req.body;
+    const { name, email, phone, bio, profileImage } = req.body;
 
     // Build update object
     const updateFields = {};
@@ -26,6 +26,7 @@ const updateProfile = async (req, res, next) => {
     if (email) updateFields.email = email;
     if (phone) updateFields.phone = phone;
     if (bio) updateFields.bio = bio;
+    if (profileImage) updateFields.profileImage = profileImage;
 
     const user = await User.findByIdAndUpdate(req.user._id, updateFields, {
       new: true,
