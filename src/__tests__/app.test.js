@@ -1,11 +1,19 @@
 const request = require('supertest');
+const mongoose = require('mongoose');
+const { MongoMemoryServer } = require('mongodb-memory-server');
 const app = require('../app');
 const User = require('../models/user.model');
 const Apartment = require('../models/apartment.model');
 
 let testUser;
+let mongoServer;
 
 beforeAll(async () => {
+  // Start MongoDB Memory Server
+  mongoServer = await MongoMemoryServer.create();
+  const mongoUri = mongoServer.getUri();
+  await mongoose.connect(mongoUri);
+
   // Create a test user
   testUser = await User.create({
     email: 'testuser@example.com',
@@ -23,6 +31,8 @@ afterAll(async () => {
   // Clean up test data
   await User.deleteMany();
   await Apartment.deleteMany();
+  await mongoose.disconnect();
+  await mongoServer.stop();
 });
 
 describe('App', () => {
