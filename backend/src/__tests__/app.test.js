@@ -2,13 +2,10 @@ const request = require('supertest');
 const app = require('../app');
 const User = require('../models/user.model');
 const Apartment = require('../models/apartment.model');
-const mongoose = require('mongoose');
 
-let server;
 let testUser;
 
 beforeAll(async () => {
-  await mongoose.connect(process.env.MONGODB_URI);
   // Create a test user
   testUser = await User.create({
     email: 'testuser@example.com',
@@ -26,8 +23,6 @@ afterAll(async () => {
   // Clean up test data
   await User.deleteMany();
   await Apartment.deleteMany();
-  // Close the MongoDB connection
-  await mongoose.connection.close();
 });
 
 describe('App', () => {

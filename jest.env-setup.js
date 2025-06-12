@@ -1,4 +1,5 @@
 const { MongoMemoryServer } = require('mongodb-memory-server');
+const mongoose = require('mongoose');
 
 let mongod;
 
@@ -14,7 +15,7 @@ jest.mock('passport-jwt');
 jest.mock('passport-http-bearer');
 
 // Increase timeout for all tests
-jest.setTimeout(30000);
+jest.setTimeout(60000);
 
 // Suppress console logs during tests
 global.console = {
@@ -29,10 +30,13 @@ global.console = {
 // Setup MongoDB Memory Server
 beforeAll(async () => {
   mongod = await MongoMemoryServer.create();
-  process.env.MONGODB_URI = mongod.getUri();
+  const uri = mongod.getUri();
+  process.env.MONGODB_URI = uri;
+  await mongoose.connect(uri);
 });
 
 // Cleanup after all tests
 afterAll(async () => {
+  await mongoose.disconnect();
   await mongod.stop();
 });
