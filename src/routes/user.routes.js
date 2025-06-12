@@ -4,6 +4,7 @@ const { protect } = require('../middleware/auth.middleware');
 const {
   getProfile,
   updateProfile,
+  deleteProfile,
   updatePreferences,
   getSavedSearches,
   saveSearch,
@@ -18,6 +19,7 @@ const {
 // Profile routes
 router.get('/profile', protect, getProfile);
 router.put('/profile', protect, updateProfile);
+router.delete('/profile', protect, deleteProfile);
 
 // Preferences routes
 router.get('/preferences', protect, updatePreferences);

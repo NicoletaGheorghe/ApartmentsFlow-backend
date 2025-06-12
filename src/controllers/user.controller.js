@@ -38,6 +38,18 @@ const updateProfile = async (req, res, next) => {
   }
 };
 
+// @desc    Delete user profile
+// @route   DELETE /api/users/profile
+// @access  Private
+const deleteProfile = async (req, res, next) => {
+  try {
+    await User.findByIdAndDelete(req.user._id);
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Update user preferences
 // @route   PUT /api/users/preferences
 // @access  Private
@@ -225,6 +237,7 @@ const deleteApartmentNote = async (req, res, next) => {
 module.exports = {
   getProfile,
   updateProfile,
+  deleteProfile,
   updatePreferences,
   getSavedSearches,
   saveSearch,
