@@ -33,7 +33,19 @@ beforeAll(async () => {
   const uri = mongod.getUri();
 
   // Connect to the in-memory database
-  await mongoose.connect(uri);
+  await mongoose.connect(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+
+  // Wait for the connection to be established
+  await new Promise((resolve) => {
+    if (mongoose.connection.readyState === 1) {
+      resolve();
+    } else {
+      mongoose.connection.once('connected', resolve);
+    }
+  });
 });
 
 // Global teardown - runs once after all test files
