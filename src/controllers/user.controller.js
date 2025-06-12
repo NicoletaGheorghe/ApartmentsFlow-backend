@@ -1,40 +1,181 @@
 const User = require('../models/user.model');
+const Apartment = require('../models/apartment.model');
 
-const getMe = async (req, res) => {
+// @desc    Get user profile
+// @route   GET /api/users/profile
+// @access  Private
+const getProfile = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id).select('-password');
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching user profile' });
+    next(error);
   }
 };
 
-const updateMe = async (req, res) => {
+// @desc    Update user profile
+// @route   PUT /api/users/profile
+// @access  Private
+const updateProfile = async (req, res, next) => {
   try {
-    const { name, profileImage } = req.body;
-    const user = await User.findById(req.user._id);
+    const { name, email, phone, bio } = req.body;
 
-    if (name) user.name = name;
-    if (profileImage) user.profileImage = profileImage;
+    // Build update object
+    const updateFields = {};
+    if (name) updateFields.name = name;
+    if (email) updateFields.email = email;
+    if (phone) updateFields.phone = phone;
+    if (bio) updateFields.bio = bio;
 
-    await user.save();
+    const user = await User.findByIdAndUpdate(req.user._id, updateFields, {
+      new: true,
+      runValidators: true,
+    }).select('-password');
+
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: 'Error updating user profile' });
+    next(error);
   }
 };
 
-const deleteMe = async (req, res) => {
+// @desc    Update user preferences
+// @route   PUT /api/users/preferences
+// @access  Private
+const updatePreferences = async (req, res, next) => {
   try {
-    await User.findByIdAndDelete(req.user._id);
-    res.json({ message: 'User deleted successfully' });
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { preferences: req.body },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    res.json(user);
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting user profile' });
+    next(error);
+  }
+};
+
+// @desc    Get saved searches
+// @route   GET /api/users/searches
+// @access  Private
+const getSavedSearches = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id).select('savedSearches');
+    res.json(user.savedSearches);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Save search
+// @route   POST /api/users/searches
+// @access  Private
+const saveSearch = async (req, res, next) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { $push: { savedSearches: req.body } },
+      { new: true, runValidators: true }
+    ).select('savedSearches');
+
+    res.json(user.savedSearches);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete saved search
+// @route   DELETE /api/users/searches/:id
+// @access  Private
+const deleteSavedSearch = async (req, res, next) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { $pull: { savedSearches: { _id: req.params.id } } },
+      { new: true }
+    ).select('savedSearches');
+
+    res.json(user.savedSearches);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get favorite apartments
+// @route   GET /api/users/favorites
+// @access  Private
+const getFavoriteApartments = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id).populate({
+      path: 'apartmentNotes.apartment',
+      select: 'title price location bedrooms bathrooms area amenities images',
+    });
+
+    res.json(user.apartmentNotes);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get apartment notes
+// @route   GET /api/users/apartments/:id/notes
+// @access  Private
+const getApartmentNotes = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const apartmentNotes = user.apartmentNotes.find(
+      (note) => note.apartment.toString() === req.params.id
+    );
+
+    if (!apartmentNotes) {
+      return res.json({ notes: [] });
+    }
+
+    res.json(apartmentNotes.notes);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Add apartment note
+// @route   POST /api/users/apartments/:id/notes
+// @access  Private
+const addApartmentNote = async (req, res, next) => {
+  try {
+    const apartment = await Apartment.findById(req.params.id);
+    if (!apartment) {
+      return res.status(404).json({ error: 'Apartment not found' });
+    }
+
+    const user = await User.findById(req.user._id);
+    const apartmentNotes = user.apartmentNotes.find(
+      (note) => note.apartment.toString() === req.params.id
+    );
+
+    if (apartmentNotes) {
+      apartmentNotes.notes.push({ content: req.body.content });
+    } else {
+      user.apartmentNotes.push({
+        apartment: req.params.id,
+        notes: [{ content: req.body.content }],
+      });
+    }
+
+    await user.save();
+    res.json(user.apartmentNotes);
+  } catch (error) {
+    next(error);
   }
 };
 
 module.exports = {
-  getMe,
-  updateMe,
-  deleteMe
-}; 
+  getProfile,
+  updateProfile,
+  updatePreferences,
+  getSavedSearches,
+  saveSearch,
+  deleteSavedSearch,
+  getFavoriteApartments,
+  getApartmentNotes,
+  addApartmentNote,
+};
