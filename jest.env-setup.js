@@ -1,3 +1,7 @@
+const { MongoMemoryServer } = require('mongodb-memory-server');
+
+let mongod;
+
 // Set test environment variables
 process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = 'test-secret';
@@ -21,3 +25,14 @@ global.console = {
   info: jest.fn(),
   debug: jest.fn(),
 };
+
+// Setup MongoDB Memory Server
+beforeAll(async () => {
+  mongod = await MongoMemoryServer.create();
+  process.env.MONGODB_URI = mongod.getUri();
+});
+
+// Cleanup after all tests
+afterAll(async () => {
+  await mongod.stop();
+});
