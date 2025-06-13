@@ -127,6 +127,30 @@ export class ApiClient {
                 }
 
        }
+       async getProfile() {
+        try{
+            const response = await this.apiCall("get", url + "/users/profile");
+            return response;
+        } catch (error) {
+            console.error("Failed to fetch user profile:", error);
+            throw error;
+        }
+       }
+
+       async updateProfile(data) {
+            try {
+                  const response = await this.apiCall("put", url + "/users/profile", data);
+                    return response.data;
+        
+            } catch (error) {
+                throw error;
+                }
+       }
+       async removeProfile() {
+            const response = await this.apiCall("delete", url + "/users/profile");
+            return response.data;
+        }
+
        async createApartment(
         title,
         description,

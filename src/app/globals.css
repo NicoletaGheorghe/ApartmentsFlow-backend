@@ -51,4 +51,11 @@ button:active {
   transform: translateY(1px);
   opacity: 0.95;
 }
-
+.avatar-button {
+  padding: 0;
+  border-radius: 50%;
+}
+.avatar-button:hover {
+  background-color: transparent !important;
+  padding: 0;
+}
