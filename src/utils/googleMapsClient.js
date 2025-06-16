@@ -83,4 +83,4 @@ class GoogleMapsClient {
   }
 }
 
-module.exports = GoogleMapsClient;
+module.exports = GoogleMapsClient; 

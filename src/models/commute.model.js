@@ -56,4 +56,4 @@ commuteSchema.index({ 'destination.placeId': 1 });
 
 const Commute = mongoose.model('Commute', commuteSchema);
 
-module.exports = Commute;
+module.exports = Commute; 

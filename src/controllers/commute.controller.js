@@ -44,7 +44,7 @@ exports.getMultipleCommuteTimes = async (req, res) => {
     const origin = `${apartment.location.coordinates[1]},${apartment.location.coordinates[0]}`;
 
     // Get commute times for all destinations
-    const commutePromises = destinations.map((destination) =>
+    const commutePromises = destinations.map(destination =>
       mapsClient.getCommuteTime(origin, destination, mode)
     );
 
@@ -80,4 +80,4 @@ exports.getPlaceDetails = async (req, res) => {
       details: error.message,
     });
   }
-};
+}; 
