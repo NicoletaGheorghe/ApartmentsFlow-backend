@@ -9,21 +9,10 @@ export default function ListingsPage() {
   const [flats, setFlats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // const listings = [
-  //   {
-  //     title: "Apartment one",
-  //     price: "£1,000/mo",
-  //     location: "London",
-  //     image: "/images/studio.jpg", 
-  //   },
-  //   {
-  //     title: "Apartment two",
-  //     price: "£1,500/mo",
-  //     location: "London",
-  //     image: "/images/apartment.jpg",
-  //   },
-  // ];
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
+  const [limit] = useState(6);
+  
    useEffect(() => {
     const fetchFlats = async () => {
       try {
@@ -32,13 +21,14 @@ export default function ListingsPage() {
           window.location.href = "auth/unauthorized";
           return;
         }
-        const response = await apiClient.getApartments();
+        const response = await apiClient.getApartments({ page, limit });
         console.log("API response:", response.data);
         if (Array.isArray(response.data.apartments)) {
         setFlats(response.data.apartments);
       } else {
         setFlats([]);
       }
+      setPages(response.data.pages);
       } catch (err) {
         setError(
           err.response?.data?.message ||
@@ -49,7 +39,7 @@ export default function ListingsPage() {
       }
     };
      fetchFlats();
-  }, []);
+  }, [page, limit]);
 
   const filteredFlats = (flats || []).filter((flat) =>
     flat.title.toLowerCase().includes(search.toLowerCase())
@@ -97,7 +87,7 @@ if (loading) {
         {filteredFlats.map((flat, index) => {
           const { location = {} } = flat;
           const { coordinates = [], address = {} } = location;
-          const [longitude, latitude] = coordinates;
+          //const [longitude, latitude] = coordinates;
 
           return (
             <ListingCard
@@ -121,9 +111,27 @@ if (loading) {
             />
           );
       })}
+
       </div>
 )}
      </>
+     <div className="pagination-controls flex justify-between mt-5">
+        <button
+          disabled={page === 1}
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+        >
+          « Prev
+        </button>
+
+        <span>Page {page} of {pages}</span>
+
+        <button
+          disabled={page === pages}
+          onClick={() => setPage((p) => Math.min(pages, p + 1))}
+        >
+          Next »
+        </button>
+      </div>
     </div>
     );
   }

@@ -197,12 +197,14 @@ export class ApiClient {
             throw error;
             }
        }
-       async getApartments() {
+       async getApartments(params = {page, limit}) {
             try {
-            const response = await this.apiCall("get", url + "/apartments");
-            return response;
+                const queryString = new URLSearchParams(params).toString();
+                const endpoint = url + "/apartments" + (queryString ? `?${queryString}` : "") ;
+                const response = await this.apiCall("get", endpoint);
+                return response;
             } catch (error) {
-            throw error;
+                throw error;
             }
         }
 }
