@@ -16,8 +16,8 @@ export default function ListingCard({ title, description, price, latitude, longi
         <h3 className="text-xl font-semibold text-[var(--color-primary)]">{title}</h3>
         <p className="text-gray-600">{description}</p>
         <p className="text-[var(--color-accent)] font-bold mt-2">{price}</p>
-        <p className="text-gray-600"><span className="text-xs">Latitude:</span> {latitude}°</p>
-        <p className="text-gray-600"><span className="text-xs">Longitude:</span> {longitude}°</p>
+        {/* <p className="text-gray-600"><span className="text-xs">Latitude:</span> {latitude}°</p>
+        <p className="text-gray-600"><span className="text-xs">Longitude:</span> {longitude}°</p> */}
         <p className="text-gray-600"><span className="text-xs">Street:</span> {street}</p>
         <p className="text-gray-600"><span className="text-xs">City:</span> {city}</p>
         <p className="text-gray-600"><span className="text-xs">State:</span> {state}</p>
