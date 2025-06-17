@@ -1,10 +1,13 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useLoadScript } from "@react-google-maps/api";
 import { ApiClient } from "../../../apiClient/apiClient";
 import Input from "../components/Input";
 import Button from "../components/Button";
 
+const libraries = ['places'];
 export default function ApartmentAdd() {
+    console.log(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY)
     const [formData, setFormData] = useState({
         title: "",
         description: "",
@@ -27,13 +30,70 @@ export default function ApartmentAdd() {
         const [success, setSuccess] = useState(false);
         const [loading, setLoading] = useState(false);
 
+        const autocompleteRef = useRef(null);
+        const { isLoaded } = useLoadScript({
+            googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
+            libraries,
+        });
+
         useEffect(() => {
             const apiClient = new ApiClient();
             if (!apiClient.isLoggedIn()) {
-                window.location.href = "/auth/unautorized";
+                window.location.href = "/auth/unauthorized";
             }
         }, []);
 
+       
+
+useEffect(() => {
+  if (!isLoaded) return;
+
+  const input = document.getElementById("autocomplete");
+  if (!input) return;
+
+  const autocomplete = new window.google.maps.places.Autocomplete(input, {
+    types: ["address"],
+  });
+
+  autocomplete.addListener("place_changed", () => {
+    const place = autocomplete.getPlace();
+
+    if (!place.geometry || !place.address_components) {
+      setErrors((prev) => ({
+        ...prev,
+        street: "Please select a valid address from the suggestions.",
+      }));
+      return;
+    }
+
+    const lat = place.geometry.location.lat();
+    const lng = place.geometry.location.lng();
+
+    const getComponent = (type) => {
+      const comp = place.address_components.find((c) =>
+        c.types.includes(type)
+      );
+      return comp ? comp.long_name : "";
+    };
+
+    setFormData((prev) => ({
+      ...prev,
+      latitude: lat.toString(),
+      longitude: lng.toString(),
+      street: `${getComponent("street_number")} ${getComponent("route")}`.trim(),
+      city: getComponent("locality") || getComponent("postal_town"),
+      state: getComponent("administrative_area_level_1"),
+      zipCode: getComponent("postal_code"),
+      country: getComponent("country"),
+    }));
+
+    setErrors((prev) => {
+      const copy = { ...prev };
+      ["street", "city", "state", "zipCode", "country", "latitude", "longitude"].forEach(f => delete copy[f]);
+      return copy;
+    });
+  });
+}, [isLoaded]);
         const validateForm = () => {
             const newErrors = {};
             if (!formData.title.trim()) newErrors.title = "Title is required.";
@@ -55,7 +115,7 @@ export default function ApartmentAdd() {
                 newErrors.bathrooms = "Please enter a valid number of bathrooms.";
             }
             if (formData.area && (isNaN(Number(formData.area)) || Number(formData.area) < 0)) {
-                newErrors.bathrooms = "Please enter a valid area.";
+                newErrors.area = "Please enter a valid area.";
             }
              if (!formData.street.trim()) newErrors.street = "Street is required.";
             if (!formData.city.trim()) newErrors.city = "City is required.";
@@ -72,6 +132,7 @@ export default function ApartmentAdd() {
           };
         const handleSubmit = async (e) => {
           e.preventDefault();
+          console.log("Form submission triggered");
           setSuccess(false);
           if (validateForm()) {
             setLoading(true);
@@ -89,7 +150,7 @@ export default function ApartmentAdd() {
                         },
                     };
 
-                 const response = await apiClient.createApartment(
+                   await apiClient.createApartment(
                     formData.title,
                     formData.description,
                     Number(formData.price),
@@ -99,6 +160,7 @@ export default function ApartmentAdd() {
                     Number(formData.area),
                     formData.amenities.split(",").map((a) => a.trim()),
                     formData.images ? formData.images.split(",").map((img) => img.trim()) : [], 
+                    formData.status,
                  );
                  setSuccess(true);
                  setFormData({
@@ -179,6 +241,17 @@ export default function ApartmentAdd() {
                 )}
             </div>
             <div>
+                <label htmlFor="autocomplete" className="block mb-1 font-semibold">
+                    Search Address
+                </label>
+                <input
+                    id="autocomplete"
+                    type="text"
+                    placeholder="Start typing address..."
+                    className="w-full p-2 border rounded"
+                />
+            </div>
+            {/* <div>
                 <Input
                 label="Latitude"
                 type="number"
@@ -190,8 +263,8 @@ export default function ApartmentAdd() {
                 {errors.latitude && (
                     <p className="mt-1 text-sm text-red-500">{errors.latitude}</p>
                 )}
-            </div>
-            <div>
+            </div> */}
+            {/* <div>
                 <Input
                 label="Longitude"
                 type="number"
@@ -203,7 +276,7 @@ export default function ApartmentAdd() {
                 {errors.longitude && (
                     <p className="mt-1 text-sm text-red-500">{errors.longitude}</p>
                 )}
-            </div>
+            </div> */}
             <div>
                 <Input
                 label="Street"
@@ -269,6 +342,7 @@ export default function ApartmentAdd() {
                     <p className="mt-1 text-sm text-red-500">{errors.country}</p>
                 )}
             </div>
+            
             <div>
                 <Input
                 label="Bedrooms"

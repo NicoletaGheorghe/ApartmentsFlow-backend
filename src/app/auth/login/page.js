@@ -35,7 +35,7 @@ export default function Login() {
         setError("Login successful but no token received");}
       } catch (err) {
         console.error("Login error:", err.response || err);
-        setError(err.response?.data?.message || "Invalid credentials or server error");
+        setError(err.response?.data?.message || "Email or password is incorrect.");
       } finally {
         setLoading(false);
       }

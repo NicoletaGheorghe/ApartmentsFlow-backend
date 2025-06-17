@@ -105,8 +105,8 @@ if (loading) {
               title={flat.title}
               description={flat.description}
               price={`£${flat.price}/mo`}
-              latitude={latitude}
-              longitude={longitude}
+              // latitude={latitude}
+              // longitude={longitude}
               street={address.street}
               city={address.city}
               state={address.state}
