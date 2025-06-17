@@ -30,7 +30,7 @@ export default function ApartmentAdd() {
         const [success, setSuccess] = useState(false);
         const [loading, setLoading] = useState(false);
 
-        const autocompleteRef = useRef(null);
+        
         const { isLoaded } = useLoadScript({
             googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
             libraries,
@@ -45,55 +45,55 @@ export default function ApartmentAdd() {
 
        
 
-useEffect(() => {
-  if (!isLoaded) return;
+        useEffect(() => {
+        if (!isLoaded) return;
 
-  const input = document.getElementById("autocomplete");
-  if (!input) return;
+        const input = document.getElementById("autocomplete");
+        if (!input) return;
 
-  const autocomplete = new window.google.maps.places.Autocomplete(input, {
-    types: ["address"],
-  });
+        const autocomplete = new window.google.maps.places.Autocomplete(input, {
+            types: ["address"],
+        });
 
-  autocomplete.addListener("place_changed", () => {
-    const place = autocomplete.getPlace();
+        autocomplete.addListener("place_changed", () => {
+            const place = autocomplete.getPlace();
 
-    if (!place.geometry || !place.address_components) {
-      setErrors((prev) => ({
-        ...prev,
-        street: "Please select a valid address from the suggestions.",
-      }));
-      return;
-    }
+            if (!place.geometry || !place.address_components) {
+            setErrors((prev) => ({
+                ...prev,
+                street: "Please select a valid address from the suggestions.",
+            }));
+            return;
+            }
 
-    const lat = place.geometry.location.lat();
-    const lng = place.geometry.location.lng();
+            const lat = place.geometry.location.lat();
+            const lng = place.geometry.location.lng();
 
-    const getComponent = (type) => {
-      const comp = place.address_components.find((c) =>
-        c.types.includes(type)
-      );
-      return comp ? comp.long_name : "";
-    };
+            const getComponent = (type) => {
+            const comp = place.address_components.find((c) =>
+                c.types.includes(type)
+            );
+            return comp ? comp.long_name : "";
+            };
 
-    setFormData((prev) => ({
-      ...prev,
-      latitude: lat.toString(),
-      longitude: lng.toString(),
-      street: `${getComponent("street_number")} ${getComponent("route")}`.trim(),
-      city: getComponent("locality") || getComponent("postal_town"),
-      state: getComponent("administrative_area_level_1"),
-      zipCode: getComponent("postal_code"),
-      country: getComponent("country"),
-    }));
+            setFormData((prev) => ({
+            ...prev,
+            latitude: lat.toString(),
+            longitude: lng.toString(),
+            street: `${getComponent("street_number")} ${getComponent("route")}`.trim(),
+            city: getComponent("locality") || getComponent("postal_town"),
+            state: getComponent("administrative_area_level_1"),
+            zipCode: getComponent("postal_code"),
+            country: getComponent("country"),
+            }));
 
-    setErrors((prev) => {
-      const copy = { ...prev };
-      ["street", "city", "state", "zipCode", "country", "latitude", "longitude"].forEach(f => delete copy[f]);
-      return copy;
-    });
-  });
-}, [isLoaded]);
+            setErrors((prev) => {
+            const copy = { ...prev };
+            ["street", "city", "state", "zipCode", "country", "latitude", "longitude"].forEach(f => delete copy[f]);
+            return copy;
+            });
+        });
+        }, [isLoaded]);
         const validateForm = () => {
             const newErrors = {};
             if (!formData.title.trim()) newErrors.title = "Title is required.";
