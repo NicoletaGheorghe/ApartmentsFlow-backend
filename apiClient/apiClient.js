@@ -6,8 +6,8 @@ export class ApiClient {
     constructor() {
         this.axiosInstance = axios.create({
             headers:{
-                'Authorization': `Bearer ${this.getToken()}`
-            }
+                Authorization: `Bearer ${this.getToken()}`,
+            },
         });
         this.axiosInstance.interceptors.request.use(
             (config) => {
@@ -25,10 +25,10 @@ export class ApiClient {
             (response) => response,
             (error) => {
                 if (error.response && error.response.status === 401) {
-                this.removeToken();
-                if (typeof window !== 'undefined') {
+                  this.removeToken();
+                  if (typeof window !== 'undefined') {
                     window.location.href = '/auth/unauthorized';
-                }
+                  }
                 }
                 return Promise.reject(error);
             }
@@ -36,8 +36,8 @@ export class ApiClient {
         }
         getToken() {
             if (typeof window !== 'undefined') {
-            const token = localStorage.getItem('authToken');
-            return token;
+              const token = localStorage.getItem('authToken');
+              return token;
             }
             return null;
         }
@@ -207,4 +207,12 @@ export class ApiClient {
                 throw error;
             }
         }
+        async getPlaceDetails(placeId) {
+            try {
+                const response = await this.apiCall("get", url + `/commute/place/${placeId}`);
+                return response.data;
+            } catch (error) {
+                throw error;
+    }
+  }
 }

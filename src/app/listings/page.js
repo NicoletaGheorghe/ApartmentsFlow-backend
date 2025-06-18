@@ -70,7 +70,7 @@ if (loading) {
   }
 
   return (
-    <div className="p-6">
+    <div className=" p-6 ">
       <h1 className="text-3xl font-bold mb-2">Apartment Listings</h1>
       <p className="mb-6">Here you can browse all available apartments.</p>
 
@@ -123,7 +123,7 @@ if (loading) {
           « Prev
         </button>
 
-        <span>Page {page} of {pages}</span>
+        <span className="mt-2">Page {page} of {pages}</span>
 
         <button
           disabled={page === pages}

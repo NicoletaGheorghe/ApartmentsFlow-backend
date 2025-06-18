@@ -7,7 +7,7 @@ import Button from "../components/Button";
 
 const libraries = ['places'];
 export default function ApartmentAdd() {
-    console.log(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY)
+    
     const [formData, setFormData] = useState({
         title: "",
         description: "",
@@ -77,15 +77,15 @@ export default function ApartmentAdd() {
             };
 
             setFormData((prev) => ({
-            ...prev,
-            latitude: lat.toString(),
-            longitude: lng.toString(),
-            street: `${getComponent("street_number")} ${getComponent("route")}`.trim(),
-            city: getComponent("locality") || getComponent("postal_town"),
-            state: getComponent("administrative_area_level_1"),
-            zipCode: getComponent("postal_code"),
-            country: getComponent("country"),
-            }));
+                ...prev,
+                latitude: lat.toString(),
+                longitude: lng.toString(),
+                street: `${getComponent("street_number")} ${getComponent("route")}`.trim(),
+                city: getComponent("locality") || getComponent("postal_town"),
+                state: getComponent("administrative_area_level_1"),
+                zipCode: getComponent("postal_code"),
+                country: getComponent("country"),
+                }));
 
             setErrors((prev) => {
             const copy = { ...prev };
@@ -199,7 +199,7 @@ export default function ApartmentAdd() {
             };
  return (
     <div className="max-w-2xl mx-auto p-6">
-        <h1 className="text-3xl font-bold text-[var(--color-primary)] mb-8">List An Apatment</h1>
+        <h1 className="text-3xl font-bold text-[var(--color-primary)] mb-8">List An Apartment</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
             <div>
                 <Input

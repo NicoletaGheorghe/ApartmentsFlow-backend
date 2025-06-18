@@ -21,10 +21,10 @@ const ProfilePage = () => {
   if (!user) return <p>Please log in to view your profile.</p>;
 
   return (
-    <div className='grid grid-cols-1 justify-items-center max-w-3xl mx-auto h-full px-4 sm:px-6 lg:px-8 pt-20 pb-16'>
-      <h1 className='font-bold text-xl m-3'>{user?.name}'s Profile</h1>
+    <div className='grid grid-cols-1 justify-items-start max-w-fit mx-auto h-full px-4 sm:px-6 lg:px-8 pt-20 pb-16'>
+      <h1 className='font-bold text-xl m-3'>{user?.name ? user.name.charAt(0).toUpperCase() + user.name.slice(1) : ''}'s Profile</h1>
       <ProfileCard user={user} />
-      <button onClick={() => setConfirmMessage(true)} className="text-red-600 mt-4">
+      <button onClick={() => setConfirmMessage(true)} className=" text-red-600 mt-4">
         Delete Account
       </button>
       {confirmMessage && (
