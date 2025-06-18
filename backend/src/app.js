@@ -28,6 +28,8 @@ if (process.env.NODE_ENV !== 'test') {
     .connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
     })
     .then(() => {
       console.log('Connected to MongoDB');
