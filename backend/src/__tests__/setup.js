@@ -32,17 +32,38 @@ beforeAll(async () => {
   }
 });
 
+afterEach(async () => {
+  try {
+    // Clear all collections
+    const collections = mongoose.connection.collections;
+    for (const key in collections) {
+      await collections[key].deleteMany();
+    }
+  } catch (error) {
+    console.error('Error in afterEach:', error);
+    throw error;
+  }
+});
+
 afterAll(async () => {
   try {
-    if (mongoose.connection.readyState === 1) {
-      await mongoose.disconnect();
-    }
-    if (mongoServer) {
-      await mongoServer.stop();
-    }
+    // Close all connections
+    await Promise.all([mongoose.disconnect(), mongoServer.stop()]);
   } catch (error) {
     console.error('Error cleaning up test database:', error);
     throw error;
+  }
+});
+
+// Handle process termination
+process.on('SIGINT', async () => {
+  try {
+    await mongoose.disconnect();
+    await mongoServer.stop();
+    process.exit(0);
+  } catch (error) {
+    console.error('Error during process termination:', error);
+    process.exit(1);
   }
 });
 
