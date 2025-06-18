@@ -8,7 +8,10 @@ const {
   createApartment,
   updateApartment,
   deleteApartment,
+  autofillListingFromUrl,
+  uploadImages,
 } = require('../controllers/apartment.controller');
+const upload = require('../middleware/upload');
 
 // Validation middleware
 const validateApartmentInput = (req, res, next) => {
@@ -47,6 +50,10 @@ router.get('/:id', protect, getApartment);
 router.post('/', protect, authorize('admin', 'agent'), validateApartmentInput, createApartment);
 router.put('/:id', protect, validateApartmentInput, updateApartment);
 router.delete('/:id', protect, deleteApartment);
+
+// Autofill listing from URL
+router.post('/autofill', protect, autofillListingFromUrl);
+router.post('/upload-images', protect, upload.array('images', 4), uploadImages);
 
 /**
  * @swagger
