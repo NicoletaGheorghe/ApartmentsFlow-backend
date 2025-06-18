@@ -14,6 +14,7 @@ module.exports = {
   maxConcurrency: 1,
   detectOpenHandles: false,
   detectLeaks: false,
+  logHeapUsage: false,
   transformIgnorePatterns: [
     'node_modules/(?!(mongodb-memory-server)/)'
   ],

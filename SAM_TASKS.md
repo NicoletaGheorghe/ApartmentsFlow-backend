@@ -91,4 +91,14 @@
    - Add more test cases
    - Increase test coverage
    - Add integration tests
-   - Add performance tests 
+   - Add performance tests
+
+## Backend Integration Tasks (Frontend Needs)
+
+- [ ] Add another endpoint to fetch address autocomplete suggestions (move to commute controller)
+- [ ] Add endpoint to allow copy-paste of a listing link to autofill all relevant info about the listing, including 3-4 images
+- [ ] Add endpoint to upload images directly from user's computer
+- [ ] Integrate Cloudinary for image uploads and store image URLs
+- [ ] Remove longitude/latitude value from listing model and related endpoints (no longer needed)
+
+> Note: Google Maps Places Autocomplete is not available to new customers after March 1st, 2025. Consider alternative APIs or update implementation accordingly. 

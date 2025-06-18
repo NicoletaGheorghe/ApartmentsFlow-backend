@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const commuteController = require('../controllers/commute.controller');
 
+// GET /api/commute/suggestions
+router.get('/suggestions', commuteController.getAddressSuggestions);
+
 // GET /api/commute/:apartmentId
 router.get('/:apartmentId', function (req, res, next) {
   // TODO: Get commute times for apartment
