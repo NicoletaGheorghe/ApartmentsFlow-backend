@@ -1,6 +1,13 @@
 module.exports = {
-  globalSetup: './jest.global-setup.js',
-  globalTeardown: './jest.global-teardown.js',
   testEnvironment: 'node',
-  // Add any other Jest config options here
+  testMatch: ['**/__tests__/**/*.test.js'],
+  setupFilesAfterEnv: ['./src/__tests__/setup.js'],
+  testTimeout: 30000,
+  verbose: true,
+  forceExit: true,
+  clearMocks: true,
+  resetMocks: true,
+  restoreMocks: true,
+  maxWorkers: 1,
+  bail: 1,
 };

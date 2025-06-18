@@ -9,6 +9,11 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const {
+  generalLimiter,
+  authLimiter,
+  apartmentModificationLimiter,
+} = require('./middleware/rateLimiter.middleware');
 require('dotenv').config();
 
 const app = (module.exports = express());
@@ -28,6 +33,8 @@ if (process.env.NODE_ENV !== 'test') {
     .connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
     })
     .then(() => {
       console.log('Connected to MongoDB');
@@ -43,6 +50,7 @@ app.use(helmet()); // Security headers
 app.use(cors()); // Enable CORS
 app.use(express.json()); // Parse JSON bodies
 app.use(morgan('dev')); // Logging
+app.use(generalLimiter); // Apply general rate limiting to all routes
 
 // Import routes
 const authRoutes = require('./routes/auth.routes');
@@ -51,9 +59,9 @@ const favoriteRoutes = require('./routes/favorite.routes');
 const commuteRoutes = require('./routes/commute.routes');
 const userRoutes = require('./routes/user.routes');
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/apartments', apartmentRoutes);
+// Routes with specific rate limiters
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/apartments', apartmentModificationLimiter, apartmentRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/commute', commuteRoutes);
 app.use('/api/users', userRoutes);
