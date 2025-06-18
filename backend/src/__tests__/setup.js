@@ -12,12 +12,20 @@ beforeAll(async () => {
     await mongoose.connect(uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 30000,
       socketTimeoutMS: 45000,
+      connectTimeoutMS: 30000,
+      maxPoolSize: 10,
+      minPoolSize: 1,
     });
 
     // Wait for the connection to be established
     await mongoose.connection.asPromise();
+
+    // Verify connection
+    if (mongoose.connection.readyState !== 1) {
+      throw new Error('MongoDB connection not ready');
+    }
   } catch (error) {
     console.error('Error setting up test database:', error);
     throw error;
@@ -26,8 +34,12 @@ beforeAll(async () => {
 
 afterAll(async () => {
   try {
-    await mongoose.disconnect();
-    await mongoServer.stop();
+    if (mongoose.connection.readyState === 1) {
+      await mongoose.disconnect();
+    }
+    if (mongoServer) {
+      await mongoServer.stop();
+    }
   } catch (error) {
     console.error('Error cleaning up test database:', error);
     throw error;
