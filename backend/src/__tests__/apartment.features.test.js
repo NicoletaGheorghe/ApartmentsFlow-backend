@@ -4,7 +4,20 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 const app = require('../app');
 const Apartment = require('../models/apartment.model');
 const User = require('../models/user.model');
-const cloudinary = require('../config/cloudinary');
+
+// Mock Cloudinary
+jest.mock('../config/cloudinary', () => ({
+  uploader: {
+    upload: jest.fn().mockResolvedValue({
+      secure_url: 'https://res.cloudinary.com/test/image/upload/mock-image.jpg',
+      public_id: 'test/mock-image',
+      bytes: 1024,
+      format: 'jpg',
+      width: 800,
+      height: 600,
+    }),
+  },
+}));
 
 let mongoServer;
 let testUser;
@@ -86,17 +99,20 @@ describe('Apartment Features', () => {
   });
 
   // Test 3: Image Upload
-  test.skip('should upload images to Cloudinary', async () => {
+  test('should upload images to Cloudinary', async () => {
     const response = await request(app)
       .post('/api/apartments/upload-images')
       .set('Authorization', `Bearer ${testToken}`)
       .attach('images', 'test/fixtures/test-image.jpg')
       .attach('images', 'test/fixtures/test-image-2.jpg');
 
-    // Note: This test expects 500 because Cloudinary requires real API credentials
-    // In a real test environment, you would mock the Cloudinary service
-    expect(response.status).toBe(500);
-    expect(response.body).toHaveProperty('error');
+    // Now expecting success with mocked Cloudinary
+    expect(response.status).toBe(200);
+    expect(response.body.success).toBe(true);
+    expect(response.body.images).toHaveLength(2);
+    expect(response.body.images[0]).toHaveProperty('url');
+    expect(response.body.images[0]).toHaveProperty('publicId');
+    expect(response.body.images[0].url).toContain('cloudinary.com');
   }, 10000); // Increase timeout to 10 seconds
 
   // Test 4: Update Apartment (requires testApartment from first test)

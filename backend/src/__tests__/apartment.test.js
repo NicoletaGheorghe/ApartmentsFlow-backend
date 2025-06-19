@@ -7,6 +7,20 @@ const User = require('../models/user.model');
 const jwt = require('jsonwebtoken');
 const NodeCache = require('node-cache');
 
+// Mock Cloudinary
+jest.mock('../config/cloudinary', () => ({
+  uploader: {
+    upload: jest.fn().mockResolvedValue({
+      secure_url: 'https://res.cloudinary.com/test/image/upload/mock-image.jpg',
+      public_id: 'test/mock-image',
+      bytes: 1024,
+      format: 'jpg',
+      width: 800,
+      height: 600,
+    }),
+  },
+}));
+
 let mongoServer;
 let adminToken;
 let agentToken;
@@ -278,8 +292,11 @@ describe('Image Upload', () => {
       .set('Authorization', `Bearer ${adminToken}`)
       .attach('images', Buffer.from('fake image data'), 'test.jpg');
 
-    // Note: This test will fail in actual execution because Cloudinary requires real API credentials
-    // In a real test environment, you would mock the Cloudinary service
-    expect(response.status).toBe(500); // Expected to fail due to missing Cloudinary credentials
+    // Now expecting success with mocked Cloudinary
+    expect(response.status).toBe(200);
+    expect(response.body.success).toBe(true);
+    expect(response.body.images).toHaveLength(1);
+    expect(response.body.images[0]).toHaveProperty('url');
+    expect(response.body.images[0]).toHaveProperty('publicId');
   });
 });

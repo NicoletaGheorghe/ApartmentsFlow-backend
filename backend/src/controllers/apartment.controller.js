@@ -361,10 +361,7 @@ const uploadImages = async (req, res) => {
           unique_filename: true,
           overwrite: false,
           resource_type: 'image',
-          transformation: [
-            { width: 800, height: 600, crop: 'limit' }, // Resize for consistency
-            { quality: 'auto:good' }, // Optimize quality
-          ],
+          transformation: [{ width: 800, height: 600, crop: 'limit' }, { quality: 'auto:good' }],
         });
 
         uploadedImages.push({
@@ -378,9 +375,11 @@ const uploadImages = async (req, res) => {
         });
       } catch (uploadError) {
         console.error(`Error uploading file ${file.originalname}:`, uploadError);
-        // Continue with other files even if one fails
+        // Include the actual error message for testability
         uploadedImages.push({
-          error: `Failed to upload ${file.originalname}`,
+          error: `Failed to upload ${file.originalname}: ${
+            uploadError && uploadError.message ? uploadError.message : uploadError
+          }`,
           filename: file.originalname,
         });
       }
