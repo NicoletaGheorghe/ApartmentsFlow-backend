@@ -1,13 +1,10 @@
 const Apartment = require('../models/apartment.model');
-const NodeCache = require('node-cache');
+const cacheManager = require('../config/cache');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const cloudinary = require('cloudinary');
 
-// Initialize cache with a standard TTL of 10 minutes
-const cache = new NodeCache({ stdTTL: 600 });
-
-// Query builder for apartment filters
+// AI-OPTIMIZED: Query builder for apartment filters with role-based access
 const buildApartmentQuery = (req) => {
   // Handle user role-based access
   if (req.user) {
@@ -29,11 +26,22 @@ const buildApartmentQuery = (req) => {
   }
 };
 
-// @desc    Get all apartments
+// @desc    Get all apartments with caching
 // @route   GET /api/apartments
 // @access  Public
 const getApartments = async (req, res) => {
   try {
+    // AI-OPTIMIZED: Generate cache key based on query parameters and user role
+    const cacheKey = `apartments:${JSON.stringify(req.query)}:${req.user?.role || 'public'}:${
+      req.user?._id || 'anonymous'
+    }`;
+
+    // AI-OPTIMIZED: Check cache first for better performance
+    const cachedData = cacheManager.get(cacheKey);
+    if (cachedData) {
+      return res.json(cachedData);
+    }
+
     const query = buildApartmentQuery(req);
 
     // Execute query with pagination
@@ -41,6 +49,7 @@ const getApartments = async (req, res) => {
     const limit = parseInt(req.query.limit, 10) || 10;
     const skip = (page - 1) * limit;
 
+    // AI-OPTIMIZED: Use lean() for read-only queries to improve performance
     const apartments = await Apartment.find(query)
       .select(
         'title price location bedrooms bathrooms area amenities images owner status isPublic createdAt'
@@ -48,29 +57,50 @@ const getApartments = async (req, res) => {
       .populate('owner', 'name email')
       .skip(skip)
       .limit(limit)
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     const total = await Apartment.countDocuments(query);
     const pages = Math.ceil(total / limit);
 
-    return res.json({
+    const result = {
       apartments,
       page,
       pages,
       total,
-    });
+    };
+
+    // AI-OPTIMIZED: Cache the result with optimized TTL based on query complexity
+    const ttl = Object.keys(req.query).length > 0 ? 300 : 600; // 5 min for filtered, 10 min for all
+    cacheManager.set(cacheKey, result, ttl);
+
+    return res.json(result);
   } catch (error) {
     console.error('Error in getApartments:', error);
     return res.status(500).json({ message: 'Error fetching apartments', error: error.message });
   }
 };
 
-// @desc    Get single apartment
+// @desc    Get single apartment with caching
 // @route   GET /api/apartments/:id
 // @access  Public
 const getApartment = async (req, res, next) => {
   try {
-    const apartment = await Apartment.findById(req.params.id).populate('owner', 'name email');
+    // AI-OPTIMIZED: Generate cache key for individual apartment
+    const cacheKey = `apartment:${req.params.id}:${req.user?.role || 'public'}:${
+      req.user?._id || 'anonymous'
+    }`;
+
+    // AI-OPTIMIZED: Check cache first
+    const cachedData = cacheManager.get(cacheKey);
+    if (cachedData) {
+      return res.json(cachedData);
+    }
+
+    // AI-OPTIMIZED: Use lean() for read-only query
+    const apartment = await Apartment.findById(req.params.id)
+      .populate('owner', 'name email')
+      .lean();
 
     if (!apartment) {
       return res.status(404).json({ error: 'Apartment not found' });
@@ -87,13 +117,16 @@ const getApartment = async (req, res, next) => {
       return res.status(403).json({ error: 'Not authorized to view this apartment' });
     }
 
+    // AI-OPTIMIZED: Cache the result for 10 minutes
+    cacheManager.set(cacheKey, apartment, 600);
+
     return res.json(apartment);
   } catch (error) {
     return next(error);
   }
 };
 
-// @desc    Create apartment
+// @desc    Create apartment with cache invalidation
 // @route   POST /api/apartments
 // @access  Private
 const createApartment = async (req, res, next) => {
@@ -122,13 +155,17 @@ const createApartment = async (req, res, next) => {
       'owner',
       'name email'
     );
+
+    // AI-OPTIMIZED: Invalidate related cache entries
+    cacheManager.invalidateApartments();
+
     return res.status(201).json(populatedApartment);
   } catch (error) {
     return next(error);
   }
 };
 
-// @desc    Update apartment
+// @desc    Update apartment with cache invalidation
 // @route   PUT /api/apartments/:id
 // @access  Private
 const updateApartment = async (req, res) => {
@@ -160,6 +197,9 @@ const updateApartment = async (req, res) => {
       { new: true, runValidators: true }
     ).populate('owner', 'name email');
 
+    // AI-OPTIMIZED: Invalidate related cache entries
+    cacheManager.invalidateApartments();
+
     return res.json(updatedApartment);
   } catch (error) {
     if (error.name === 'ValidationError') {
@@ -170,7 +210,7 @@ const updateApartment = async (req, res) => {
   }
 };
 
-// @desc    Delete apartment
+// @desc    Delete apartment with cache invalidation
 // @route   DELETE /api/apartments/:id
 // @access  Private
 const deleteApartment = async (req, res, next) => {
@@ -187,6 +227,9 @@ const deleteApartment = async (req, res, next) => {
     }
 
     await apartment.deleteOne();
+
+    // AI-OPTIMIZED: Invalidate related cache entries
+    cacheManager.invalidateApartments();
 
     return res.json({ message: 'Apartment removed' });
   } catch (error) {

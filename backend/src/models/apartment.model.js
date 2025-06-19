@@ -146,18 +146,35 @@ const apartmentSchema = new mongoose.Schema(
   }
 );
 
-// Create geospatial index for location queries
-// apartmentSchema.index({ location: '2dsphere' }); // Removed - location is now a string, not coordinates
+// AI-OPTIMIZED: Compound indexes for common query patterns
+// Price range queries with status and public visibility
+apartmentSchema.index({ price: 1, status: 1, isPublic: 1 });
 
-// Add indexes for the title, price, status, and isPublic fields
+// Location-based searches with price filtering
+apartmentSchema.index({ location: 1, price: 1, isPublic: 1 });
+
+// Bedroom and bathroom filtering with price
+apartmentSchema.index({ bedrooms: 1, bathrooms: 1, price: 1, isPublic: 1 });
+
+// Owner-based queries with status
+apartmentSchema.index({ owner: 1, status: 1 });
+
+// External listing lookups
+apartmentSchema.index({ sourceUrl: 1, externalId: 1 }, { sparse: true });
+
+// Commute-based searches
+apartmentSchema.index({ commuteMode: 1, commutingDistance: 1, isPublic: 1 });
+
+// Neighborhood rating with price
+apartmentSchema.index({ neighborhoodRating: 1, price: 1, isPublic: 1 });
+
+// Timestamp-based queries for recent listings
+apartmentSchema.index({ createdAt: -1, isPublic: 1 });
+
+// Single field indexes for individual queries
 apartmentSchema.index({ title: 1 });
-apartmentSchema.index({ price: 1 });
 apartmentSchema.index({ status: 1 });
 apartmentSchema.index({ isPublic: 1 });
-
-// Add index for faster queries
-apartmentSchema.index({ owner: 1, status: 1 });
-apartmentSchema.index({ sourceUrl: 1, externalId: 1 }, { sparse: true });
 
 const Apartment = mongoose.model('Apartment', apartmentSchema);
 
