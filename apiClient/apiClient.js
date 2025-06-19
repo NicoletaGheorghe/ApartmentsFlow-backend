@@ -36,8 +36,8 @@ export class ApiClient {
         }
         getToken() {
             if (typeof window !== 'undefined') {
-              const token = localStorage.getItem('authToken');
-              return token;
+            const token = localStorage.getItem('authToken');
+            return token;
             }
             return null;
         }
@@ -207,12 +207,5 @@ export class ApiClient {
                 throw error;
             }
         }
-        async getPlaceDetails(placeId) {
-            try {
-                const response = await this.apiCall("get", url + `/commute/place/${placeId}`);
-                return response.data;
-            } catch (error) {
-                throw error;
-    }
-  }
+      
 }

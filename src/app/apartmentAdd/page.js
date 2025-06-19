@@ -1,11 +1,9 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
-import { useLoadScript } from "@react-google-maps/api";
+import { useState, useEffect } from "react";
 import { ApiClient } from "../../../apiClient/apiClient";
 import Input from "../components/Input";
 import Button from "../components/Button";
 
-const libraries = ['places'];
 export default function ApartmentAdd() {
     
     const [formData, setFormData] = useState({
@@ -29,13 +27,10 @@ export default function ApartmentAdd() {
         const [errors, setErrors] = useState({});
         const [success, setSuccess] = useState(false);
         const [loading, setLoading] = useState(false);
-
+        const [suggestions, setSuggestions] = useState([]);
+        const [autocompleteValue, setAutocompleteValue] = useState("");
         
-        const { isLoaded } = useLoadScript({
-            googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
-            libraries,
-        });
-
+        
         useEffect(() => {
             const apiClient = new ApiClient();
             if (!apiClient.isLoggedIn()) {
@@ -43,63 +38,52 @@ export default function ApartmentAdd() {
             }
         }, []);
 
-       
+            useEffect(() => {
+                    const delayDebounce = setTimeout(async () => {
+                        if (autocompleteValue.length >= 3) {
+                        try {
+                            const res = await fetch(
+                            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(autocompleteValue)}&addressdetails=1`
+                            );
+                            const data = await res.json();
+                            setSuggestions(data);
+                        } catch (err) {
+                            console.error("Failed to fetch suggestions", err);
+                        }
+                        } else {
+                        setSuggestions([]);
+                        }
+                    }, 500); // 500ms debounce
 
-        useEffect(() => {
-        if (!isLoaded) return;
+                    return () => clearTimeout(delayDebounce);
+                    }, [autocompleteValue]);
 
-        const input = document.getElementById("autocomplete");
-        if (!input) return;
+            const handleSuggestionClick = (place) => {
+                setAutocompleteValue(place.display_name);
+                setSuggestions([]);
 
-        const autocomplete = new window.google.maps.places.Autocomplete(input, {
-            types: ["address"],
-        });
+                const lat = place.lat;
+                const lon = place.lon;
+                const address = place.address;
 
-        autocomplete.addListener("place_changed", () => {
-            const place = autocomplete.getPlace();
-
-            if (!place.geometry || !place.address_components) {
-            setErrors((prev) => ({
+                setFormData((prev) => ({
                 ...prev,
-                street: "Please select a valid address from the suggestions.",
-            }));
-            return;
-            }
-
-            const lat = place.geometry.location.lat();
-            const lng = place.geometry.location.lng();
-
-            const getComponent = (type) => {
-            const comp = place.address_components.find((c) =>
-                c.types.includes(type)
-            );
-            return comp ? comp.long_name : "";
-            };
-
-            setFormData((prev) => ({
-                ...prev,
-                latitude: lat.toString(),
-                longitude: lng.toString(),
-                street: `${getComponent("street_number")} ${getComponent("route")}`.trim(),
-                city: getComponent("locality") || getComponent("postal_town"),
-                state: getComponent("administrative_area_level_1"),
-                zipCode: getComponent("postal_code"),
-                country: getComponent("country"),
+                latitude: lat,
+                longitude: lon,
+                street: [address.road, address.house_number].filter(Boolean).join(" "),
+                city: address.city || address.town || address.village || "",
+                state: address.state || address.state_district || address.region || address.province || "",
+                zipCode: address.postcode || "",
+                country: address.country || "",
                 }));
+            };  
 
-            setErrors((prev) => {
-            const copy = { ...prev };
-            ["street", "city", "state", "zipCode", "country", "latitude", "longitude"].forEach(f => delete copy[f]);
-            return copy;
-            });
-        });
-        }, [isLoaded]);
+       
         const validateForm = () => {
             const newErrors = {};
             if (!formData.title.trim()) newErrors.title = "Title is required.";
             if (!formData.description.trim()) newErrors.description = "Description is required.";
             if (!formData.price.trim()) newErrors.price = "Price is required.";
-            //if (!formData.location.trim()) newErrors.location = "Location is required.";
             if (!formData.bedrooms.trim()) newErrors.bedrooms = "Bedrooms are required.";
             if (!formData.bathrooms.trim()) newErrors.bathrooms = "Bathrooms are required.";
             if (!formData.area.trim()) newErrors.area = "Area is required.";
@@ -181,6 +165,8 @@ export default function ApartmentAdd() {
                     images: "",
                     status: "",
                  });
+                 setAutocompleteValue("");
+                 setSuggestions([]);
             } catch (error) {
                 console.error("Error listing an apartment.", error.response || error);
                 setErrors({
@@ -247,36 +233,26 @@ export default function ApartmentAdd() {
                 <input
                     id="autocomplete"
                     type="text"
+                    value={autocompleteValue}
+                    onChange={(e) => setAutocompleteValue(e.target.value)}
                     placeholder="Start typing address..."
                     className="w-full p-2 border rounded"
                 />
-            </div>
-            {/* <div>
-                <Input
-                label="Latitude"
-                type="number"
-                name="latitude"
-                value={formData.latitude}
-                onChange={handleChange}
-                placeholder="Enter latitude"
-                required />
-                {errors.latitude && (
-                    <p className="mt-1 text-sm text-red-500">{errors.latitude}</p>
+                {suggestions.length > 0 && (
+                    <ul className="border mt-1 max-h-60 overflow-y-auto rounded shadow bg-white z-10 relative">
+                    {suggestions.map((sugg, index) => (
+                        <li
+                        key={index}
+                        className="p-2 hover:bg-gray-100 cursor-pointer"
+                        onClick={() => handleSuggestionClick(sugg)}
+                        >
+                        {sugg.display_name}
+                        </li>
+                    ))}
+                    </ul>
                 )}
-            </div> */}
-            {/* <div>
-                <Input
-                label="Longitude"
-                type="number"
-                name="longitude"
-                value={formData.longitude}
-                onChange={handleChange}
-                placeholder="Enter longitude"
-                required />
-                {errors.longitude && (
-                    <p className="mt-1 text-sm text-red-500">{errors.longitude}</p>
-                )}
-            </div> */}
+                </div>
+            
             <div>
                 <Input
                 label="Street"
@@ -418,6 +394,9 @@ export default function ApartmentAdd() {
                     <p className="mt-1 text-sm text-red-500">{errors.status}</p>
                 )}
             </div>
+            {success && (
+                <p style={{ color: "green", marginTop: "1rem" }}>Apartment listed successfully!</p>
+             )}
             {errors.submit && (
                 <p className="text-red-500 text-sm">{errors.submit}</p>
                 )}
