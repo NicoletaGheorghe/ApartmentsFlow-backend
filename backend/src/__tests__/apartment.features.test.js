@@ -19,6 +19,39 @@ jest.mock('../config/cloudinary', () => ({
   },
 }));
 
+// Mock multer to prevent file system operations
+jest.mock('multer', () => {
+  const mockMulter = jest.fn(() => {
+    return {
+      array: jest.fn(() => {
+        return (req, res, next) => {
+          const fileCount = parseInt(req.headers['x-file-count'] || '1', 10);
+          req.files = [];
+          if (fileCount > 0) {
+            for (let i = 0; i < fileCount; i++) {
+              req.files.push({
+                fieldname: 'images',
+                originalname: `test${i + 1}.jpg`,
+                encoding: '7bit',
+                mimetype: 'image/jpeg',
+                buffer: Buffer.from(`fake image data ${i + 1}`),
+                size: 1024 + i * 100,
+              });
+            }
+          }
+          next();
+        };
+      }),
+    };
+  });
+
+  // Add static methods
+  mockMulter.diskStorage = jest.fn(() => ({}));
+  mockMulter.memoryStorage = jest.fn(() => ({}));
+
+  return mockMulter;
+});
+
 let mongoServer;
 let testUser;
 let testToken;
@@ -103,8 +136,7 @@ describe('Apartment Features', () => {
     const response = await request(app)
       .post('/api/apartments/upload-images')
       .set('Authorization', `Bearer ${testToken}`)
-      .attach('images', 'test/fixtures/test-image.jpg')
-      .attach('images', 'test/fixtures/test-image-2.jpg');
+      .set('x-file-count', '2');
 
     // Now expecting success with mocked Cloudinary
     expect(response.status).toBe(200);
