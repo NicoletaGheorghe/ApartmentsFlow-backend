@@ -216,4 +216,40 @@ describe('Apartment Features', () => {
     expect(response.body.images).toHaveLength(mockImages.length);
     expect(response.body.images[0].isMain).toBe(true);
   });
+
+  // Test 7: Neighborhood Rating and Commuting Distance
+  test('should handle neighborhood rating and commuting distance', async () => {
+    // Create an apartment first if testApartment is not available
+    if (!testApartment) {
+      const createResponse = await request(app)
+        .post('/api/apartments')
+        .set('Authorization', `Bearer ${testToken}`)
+        .send({
+          title: 'Test Apartment for Ratings',
+          description: 'A test apartment for neighborhood ratings',
+          price: 1000,
+          location: 'Test Location',
+          bedrooms: 2,
+          bathrooms: 1,
+          area: 100,
+          isPublic: true,
+        });
+      testApartment = createResponse.body;
+    }
+
+    // Update apartment with neighborhood rating
+    const updateResponse = await request(app)
+      .put(`/api/apartments/${testApartment._id}`)
+      .set('Authorization', `Bearer ${testToken}`)
+      .send({
+        neighborhoodRating: 8,
+        commuteDestination: 'Downtown Office',
+        commuteMode: 'driving',
+      });
+
+    expect(updateResponse.status).toBe(200);
+    expect(updateResponse.body.neighborhoodRating).toBe(8);
+    expect(updateResponse.body.commuteDestination).toBe('Downtown Office');
+    expect(updateResponse.body.commuteMode).toBe('driving');
+  });
 });

@@ -25,6 +25,27 @@ const validateApartment = [
     .isLength({ min: 3, max: 500 })
     .withMessage('Location must be between 3 and 500 characters'),
 
+  body('neighborhoodRating')
+    .optional()
+    .isFloat({ min: 1, max: 10 })
+    .withMessage('Neighborhood rating must be between 1 and 10'),
+
+  body('commutingDistance')
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage('Commuting distance must be a positive number'),
+
+  body('commuteMode')
+    .optional()
+    .isIn(['driving', 'walking', 'bicycling', 'transit'])
+    .withMessage('Commute mode must be one of: driving, walking, bicycling, transit'),
+
+  body('commuteDestination')
+    .optional()
+    .trim()
+    .isLength({ min: 3, max: 200 })
+    .withMessage('Commute destination must be between 3 and 200 characters'),
+
   body('bedrooms').isInt({ min: 0 }).withMessage('Bedrooms must be a non-negative integer'),
 
   body('bathrooms').isFloat({ min: 0 }).withMessage('Bathrooms must be a non-negative number'),

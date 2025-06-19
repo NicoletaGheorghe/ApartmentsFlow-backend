@@ -10,6 +10,7 @@ const {
   deleteApartment,
   autofillListingFromUrl,
   uploadImages,
+  calculateCommuteDistance,
 } = require('../controllers/apartment.controller');
 const upload = require('../middleware/upload');
 
@@ -89,6 +90,9 @@ router.post(
   uploadImages
 );
 
+// Calculate and save commute distance
+router.post('/:id/commute', protect, calculateCommuteDistance);
+
 /**
  * @swagger
  * components:
@@ -136,6 +140,22 @@ router.post(
  *           type: string
  *           format: date
  *           description: Date when the apartment becomes available
+ *         neighborhoodRating:
+ *           type: number
+ *           minimum: 1
+ *           maximum: 10
+ *           description: Neighborhood rating from 1-10
+ *         commutingDistance:
+ *           type: number
+ *           minimum: 0
+ *           description: Commuting distance in minutes
+ *         commuteMode:
+ *           type: string
+ *           enum: [driving, walking, bicycling, transit]
+ *           description: Mode of transportation for commute
+ *         commuteDestination:
+ *           type: string
+ *           description: Destination for commute calculation
  */
 
 /**

@@ -103,6 +103,43 @@ const apartmentSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    // New fields for enhanced listing information
+    neighborhoodRating: {
+      type: Number,
+      min: [1, 'Neighborhood rating must be at least 1'],
+      max: [10, 'Neighborhood rating cannot exceed 10'],
+      validate: {
+        validator: function (v) {
+          return !v || (v >= 1 && v <= 10);
+        },
+        message: 'Neighborhood rating must be between 1 and 10',
+      },
+    },
+    commutingDistance: {
+      type: Number,
+      min: [0, 'Commuting distance cannot be negative'],
+      validate: {
+        validator: function (v) {
+          return !v || v >= 0;
+        },
+        message: 'Commuting distance must be a positive number',
+      },
+    },
+    commuteMode: {
+      type: String,
+      enum: ['driving', 'walking', 'bicycling', 'transit'],
+      default: 'driving',
+    },
+    commuteDestination: {
+      type: String,
+      trim: true,
+      validate: {
+        validator: function (v) {
+          return !v || v.length >= 3;
+        },
+        message: 'Commute destination must be at least 3 characters long',
+      },
+    },
   },
   {
     timestamps: true,

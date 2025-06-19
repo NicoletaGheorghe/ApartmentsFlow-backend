@@ -44,6 +44,8 @@
 - [x] **NEW**: Favorites system backend (heart/unheart functionality) ✅
 - [x] **NEW**: Direct image upload from computer ✅
 - [x] **NEW**: Cloudinary integration for image URLs ✅
+- [x] **NEW**: Implement neighborhood rating save into apartment schema ✅
+- [x] **NEW**: Implement commuting distance save into apartment schema ✅
 
 ### 🔄 **In Progress Backend Tasks**
 - [ ] Complete API documentation
@@ -55,9 +57,6 @@
 - [ ] Add comprehensive API rate limiting
 - [ ] Implement caching layer
 - [ ] Add monitoring and logging
-- [ ] **NEW**: Implement neighborhood rating save into apartment schema
-- [ ] **NEW**: Implement commuting distance save into apartment schema
-- [ ] **NEW**: Address autocomplete endpoint migration (Google Maps → OpenStreetMap) ✅
 
 ## 🚀 Next Steps
 
@@ -79,10 +78,11 @@
    - Increase test coverage
 
 ### Short Term (Next 2 Weeks)
-1. **Schema Enhancements**
-   - Add neighborhood rating field to apartment schema
-   - Add commuting distance field to apartment schema
-   - Update validation and API endpoints accordingly
+1. **Frontend Integration**
+   - Test all new backend features with frontend
+   - Implement neighborhood rating UI
+   - Implement commuting distance calculation UI
+   - Test favorites system (heart/unheart functionality)
 
 2. **Performance Optimization**
    - Database query optimization
@@ -132,11 +132,14 @@
 3. **Image Upload**: Direct upload from computer with Cloudinary integration
 4. **Favorites System**: Backend endpoints for users to save/unsave listings
 5. **Coordinate Removal**: Cleaned up longitude/latitude from listing model
+6. **Neighborhood Rating**: Added field to apartment schema for neighborhood ratings (1-10 scale)
+7. **Commuting Distance**: Added fields to apartment schema for storing commute times and destinations
+8. **Commute Calculation**: New endpoint to calculate and save commute distances automatically
 
 ### 🔄 **Next Priority Tasks**
-1. **Neighborhood Rating**: Add field to apartment schema for neighborhood ratings
-2. **Commuting Distance**: Add field to apartment schema for storing commute times
-3. **Frontend Integration**: Test all new backend features with frontend
+1. **Frontend Integration**: Test all new backend features with frontend
+2. **UI Implementation**: Create interfaces for neighborhood ratings and commute calculations
+3. **Testing**: Comprehensive testing of all new features
 
 ---
 

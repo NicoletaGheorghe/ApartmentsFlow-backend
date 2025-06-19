@@ -291,6 +291,11 @@ const autofillListingFromUrl = async (req, res) => {
       sourceType,
       externalId: url.split('/').pop().split('#')[0], // Extract ID from URL
       lastUpdated: new Date(),
+      // Initialize new fields with default values
+      neighborhoodRating: null, // Will be set by user/admin
+      commutingDistance: null, // Will be calculated or set by user
+      commuteMode: 'driving', // Default commute mode
+      commuteDestination: null, // Will be set by user
     };
 
     // Remove empty values
@@ -406,6 +411,87 @@ const uploadImages = async (req, res) => {
   }
 };
 
+// @desc    Calculate and save commuting distance for an apartment
+// @route   POST /api/apartments/:id/commute
+// @access  Private
+const calculateCommuteDistance = async (req, res) => {
+  try {
+    const { destination, mode = 'driving' } = req.body;
+    const { id } = req.params;
+
+    if (!destination) {
+      return res.status(400).json({ error: 'Destination is required' });
+    }
+
+    // Get apartment
+    const apartment = await Apartment.findById(id);
+    if (!apartment) {
+      return res.status(404).json({ error: 'Apartment not found' });
+    }
+
+    // Check if user has permission to update this apartment
+    if (req.user.role !== 'admin' && apartment.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'Not authorized to update this apartment' });
+    }
+
+    // Use the commute controller to get commute time
+    const commuteController = require('./commute.controller');
+
+    // Create a mock request object for the commute controller
+    const mockReq = {
+      body: {
+        apartmentId: id,
+        destination,
+        mode,
+      },
+    };
+
+    const mockRes = {
+      json: (data) => {
+        if (data.success && data.data) {
+          // Update apartment with commute information
+          apartment.commutingDistance = data.data.duration || null;
+          apartment.commuteMode = mode;
+          apartment.commuteDestination = destination;
+
+          apartment
+            .save()
+            .then(() => {
+              res.json({
+                success: true,
+                message: 'Commute distance calculated and saved',
+                data: {
+                  commutingDistance: apartment.commutingDistance,
+                  commuteMode: apartment.commuteMode,
+                  commuteDestination: apartment.commuteDestination,
+                  commuteInfo: data.data,
+                },
+              });
+            })
+            .catch((saveError) => {
+              console.error('Error saving apartment:', saveError);
+              res.status(500).json({ error: 'Failed to save commute information' });
+            });
+        } else {
+          res.status(500).json({ error: 'Failed to calculate commute distance' });
+        }
+      },
+      status: (code) => ({
+        json: (data) => res.status(code).json(data),
+      }),
+    };
+
+    // Call the commute controller
+    await commuteController.getCommuteTime(mockReq, mockRes);
+  } catch (error) {
+    console.error('Error calculating commute distance:', error);
+    res.status(500).json({
+      error: 'Failed to calculate commute distance',
+      details: error.message,
+    });
+  }
+};
+
 module.exports = {
   getApartments,
   getApartment,
@@ -414,4 +500,5 @@ module.exports = {
   deleteApartment,
   autofillListingFromUrl,
   uploadImages,
+  calculateCommuteDistance,
 };
