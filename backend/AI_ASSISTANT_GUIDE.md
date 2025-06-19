@@ -135,7 +135,7 @@ if (!cachedData) {
 ### **Mocking Strategy**
 - **Cloudinary**: Complete mock for file uploads in test environment
 - **MongoDB**: In-memory database for fast, isolated tests
-- **External APIs**: Axios mocking for Google Maps and other external calls
+- **External APIs**: Axios mocking for Nominatim (OpenStreetMap) and other external calls
 - **Performance Middleware**: Disabled in test environment for clean tests
 
 ### **Test Commands**

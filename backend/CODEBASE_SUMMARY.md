@@ -74,7 +74,8 @@ Minimal nesting for faster AI navigation and search.
 - `apartment.controller.js` - Apartment CRUD operations with caching
 - `auth.controller.js` - Authentication & authorization
 - `user.controller.js` - User profile management
-- `commute.controller.js` - Commute calculations with Google Maps API
+- `commute.controller.js` - Commute calculations with Nominatim (OpenStreetMap) API
+- `favorite.controller.js` - Favorites management
 
 ### **Models** (`src/models/`)
 - `apartment.model.js` - Apartment schema with compound indexes

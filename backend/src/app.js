@@ -280,8 +280,10 @@ app.use('/api/users', userRoutes);
  * - General server errors
  */
 app.use(function (err, req, res, next) {
-  // AI-OPTIMIZED: Log error for debugging
-  console.error(err.stack);
+  // AI-OPTIMIZED: Log error for debugging (but not in test mode for expected errors)
+  if (process.env.NODE_ENV !== 'test' || !err.code) {
+    console.error(err.stack);
+  }
 
   // AI-OPTIMIZED: Handle mongoose validation errors
   if (err.name === 'ValidationError') {

@@ -54,7 +54,7 @@ backend/
 - Node.js (v16+ recommended)
 - npm or yarn
 - MongoDB (local or cloud)
-- Google Maps API key (for commute calculations)
+- Nominatim (OpenStreetMap) API (for geocoding and commute calculations)
 - Cloudinary account (for file uploads)
 
 ### **Installation**

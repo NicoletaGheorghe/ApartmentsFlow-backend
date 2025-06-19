@@ -13,6 +13,7 @@ const {
   calculateCommuteDistance,
 } = require('../controllers/apartment.controller');
 const upload = require('../middleware/upload');
+const contentModeration = require('../middleware/contentModeration').contentModeration;
 
 // Validation middleware for creation
 const validateApartmentInput = (req, res, next) => {
@@ -87,6 +88,7 @@ router.post(
   protect,
   authorize('admin', 'agent'),
   upload.array('images', 4),
+  contentModeration,
   uploadImages
 );
 
