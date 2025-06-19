@@ -71,10 +71,12 @@ if (loading) {
 
   return (
     <div className=" p-6 ">
-      <h1 className="text-3xl font-bold mb-2">Apartment Listings</h1>
-      <p className="mb-6">Here you can browse all available apartments.</p>
+      <div className="ml-5 md:ml-25">
+        <h1 className="text-3xl font-bold mb-2 ">Apartment Listings</h1>
+        <p className="mb-6">Here you can browse all available apartments.</p>
 
-      <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} />
+        <SearchBar value={search} onChange={(e) => setSearch(e.target.value)}  />
+        </div>
       <>
       {flats.length === 0 ? (
         <div className="text-center py-12">
@@ -95,8 +97,6 @@ if (loading) {
               title={flat.title}
               description={flat.description}
               price={`£${flat.price}/mo`}
-              // latitude={latitude}
-              // longitude={longitude}
               street={address.street}
               city={address.city}
               state={address.state}
