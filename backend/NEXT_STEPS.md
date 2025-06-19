@@ -73,4 +73,36 @@
 - Response time < 200ms
 - Error rate < 1%
 - All security measures implemented
-- Documentation complete and clear 
+- Documentation complete and clear
+
+## Next Steps: Apartment & Image Features
+
+1. **Test Apartment Creation & Editing**
+   - Manual creation from scratch
+   - Autofill from external sites (Rightmove, Zoopla, or other sites)
+   - Import images from external listings
+   - Upload custom images
+   - Edit listings (update fields, add/remove images, change visibility, update source info)
+
+2. **Image Management**
+   - Upload up to 4 images per listing
+   - Set a main image
+   - Store images in Cloudinary
+   - Support multiple image formats
+
+3. **Track External Sources**
+   - Store the original URL
+   - Track the source type (Rightmove, Zoopla, etc.)
+   - Store external IDs for reference
+   - Track last update time
+
+4. **Fix Failing Tests**
+   - Review and fix failing tests in `apartment.test.js` (status 400/500 errors)
+   - Ensure all access control and listing visibility logic is correct
+
+5. **Frontend Integration**
+   - Integrate new backend endpoints with frontend forms and image upload
+   - Add UI for autofill, manual entry, and image management
+
+6. **Documentation**
+   - Update API docs and README with new endpoints and usage examples 

@@ -53,17 +53,7 @@ describe('App', () => {
         title: 'Test Apartment',
         description: 'A nice place',
         price: 1000,
-        location: {
-          type: 'Point',
-          coordinates: [0, 0],
-          address: {
-            street: '123 Main St',
-            city: 'Testville',
-            state: 'TS',
-            zipCode: '12345',
-            country: 'Testland',
-          },
-        },
+        location: '123 Main St, Testville, TS 12345',
         bedrooms: 2,
         bathrooms: 1,
         area: 50,

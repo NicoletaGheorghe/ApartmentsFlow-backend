@@ -49,11 +49,15 @@ const apartmentSchema = new mongoose.Schema(
       {
         url: {
           type: String,
-          required: true,
+          required: function () {
+            return this.images && this.images.length > 0;
+          },
         },
         publicId: {
           type: String,
-          required: true,
+          required: function () {
+            return this.images && this.images.length > 0;
+          },
         },
         isMain: {
           type: Boolean,
@@ -106,7 +110,7 @@ const apartmentSchema = new mongoose.Schema(
 );
 
 // Create geospatial index for location queries
-apartmentSchema.index({ location: '2dsphere' });
+// apartmentSchema.index({ location: '2dsphere' }); // Removed - location is now a string, not coordinates
 
 // Add indexes for the title, price, status, and isPublic fields
 apartmentSchema.index({ title: 1 });

@@ -324,33 +324,85 @@ const autofillListingFromUrl = async (req, res) => {
   }
 };
 
-// Add a new function to handle image uploads
+// @desc    Upload images for apartment listings
+// @route   POST /api/apartments/upload-images
+// @access  Private
 const uploadImages = async (req, res) => {
   try {
+    // Check if user is authorized to upload images
+    if (req.user.role !== 'admin' && req.user.role !== 'agent') {
+      return res.status(403).json({ error: 'Only admins and agents can upload images' });
+    }
+
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'No images uploaded' });
     }
 
-    const uploadedImages = await Promise.all(
-      req.files.map(async (file) => {
-        // Upload to Cloudinary or your preferred image hosting service
+    // Limit to 4 images per upload
+    if (req.files.length > 4) {
+      return res.status(400).json({ error: 'Maximum 4 images allowed per upload' });
+    }
+
+    const cloudinary = require('../config/cloudinary');
+    const uploadedImages = [];
+
+    // Process each uploaded file
+    for (const file of req.files) {
+      try {
+        // Upload to Cloudinary
         const result = await cloudinary.uploader.upload(file.path, {
           folder: 'apartments',
           use_filename: true,
+          unique_filename: true,
+          overwrite: false,
+          resource_type: 'image',
+          transformation: [
+            { width: 800, height: 600, crop: 'limit' }, // Resize for consistency
+            { quality: 'auto:good' }, // Optimize quality
+          ],
         });
 
-        return {
+        uploadedImages.push({
           url: result.secure_url,
           publicId: result.public_id,
-          isMain: false,
-        };
-      })
-    );
+          filename: file.originalname,
+          size: result.bytes,
+          format: result.format,
+          width: result.width,
+          height: result.height,
+        });
+      } catch (uploadError) {
+        console.error(`Error uploading file ${file.originalname}:`, uploadError);
+        // Continue with other files even if one fails
+        uploadedImages.push({
+          error: `Failed to upload ${file.originalname}`,
+          filename: file.originalname,
+        });
+      }
+    }
 
-    res.json({ images: uploadedImages });
+    // Check if any images were successfully uploaded
+    const successfulUploads = uploadedImages.filter((img) => !img.error);
+    if (successfulUploads.length === 0) {
+      return res.status(500).json({
+        error: 'Failed to upload any images',
+        details: uploadedImages.map((img) => img.error).filter(Boolean),
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: `Successfully uploaded ${successfulUploads.length} image(s)`,
+      images: uploadedImages,
+      uploadedCount: successfulUploads.length,
+      failedCount: uploadedImages.length - successfulUploads.length,
+    });
   } catch (error) {
-    console.error('Error uploading images:', error);
-    res.status(500).json({ error: 'Failed to upload images', details: error.message });
+    console.error('Error in uploadImages:', error);
+    return res.status(500).json({
+      error: 'Failed to upload images',
+      details: error.message,
+    });
   }
 };
 

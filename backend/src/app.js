@@ -138,6 +138,28 @@ app.use(function (err, req, res, next) {
     });
   }
 
+  // Handle multer errors
+  if (err.code === 'LIMIT_FILE_COUNT') {
+    return res.status(400).json({
+      error: 'Too many files uploaded',
+      details: 'Maximum 4 images allowed per upload',
+    });
+  }
+
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({
+      error: 'File too large',
+      details: 'Maximum file size is 5MB',
+    });
+  }
+
+  if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+    return res.status(400).json({
+      error: 'Unexpected file field',
+      details: 'Please use the correct field name for file uploads',
+    });
+  }
+
   // Default error
   res.status(err.status || 500).json({
     error: err.message || 'Internal Server Error',

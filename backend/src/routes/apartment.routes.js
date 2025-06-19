@@ -13,7 +13,7 @@ const {
 } = require('../controllers/apartment.controller');
 const upload = require('../middleware/upload');
 
-// Validation middleware
+// Validation middleware for creation
 const validateApartmentInput = (req, res, next) => {
   const { title, description, price, location } = req.body;
   const errors = [];
@@ -30,8 +30,36 @@ const validateApartmentInput = (req, res, next) => {
     errors.push('Price must be a positive number');
   }
 
-  if (!location || !location.address) {
-    errors.push('Location with address is required');
+  if (!location || location.trim().length < 3) {
+    errors.push('Location must be at least 3 characters long');
+  }
+
+  if (errors.length > 0) {
+    return res.status(400).json({ errors });
+  }
+
+  next();
+};
+
+// Validation middleware for updates (allows partial updates)
+const validateApartmentUpdate = (req, res, next) => {
+  const { title, description, price, location } = req.body;
+  const errors = [];
+
+  if (title !== undefined && (!title || title.trim().length < 3)) {
+    errors.push('Title must be at least 3 characters long');
+  }
+
+  if (description !== undefined && (!description || description.trim().length < 10)) {
+    errors.push('Description must be at least 10 characters long');
+  }
+
+  if (price !== undefined && (!price || isNaN(price) || price <= 0)) {
+    errors.push('Price must be a positive number');
+  }
+
+  if (location !== undefined && (!location || location.trim().length < 3)) {
+    errors.push('Location must be at least 3 characters long');
   }
 
   if (errors.length > 0) {
@@ -48,12 +76,18 @@ router.get('/public', validateApartmentQuery, getApartments); // Public listings
 router.get('/', protect, validateApartmentQuery, getApartments); // All listings based on role
 router.get('/:id', protect, getApartment);
 router.post('/', protect, authorize('admin', 'agent'), validateApartmentInput, createApartment);
-router.put('/:id', protect, validateApartmentInput, updateApartment);
+router.put('/:id', protect, validateApartmentUpdate, updateApartment);
 router.delete('/:id', protect, deleteApartment);
 
 // Autofill listing from URL
 router.post('/autofill', protect, autofillListingFromUrl);
-router.post('/upload-images', protect, upload.array('images', 4), uploadImages);
+router.post(
+  '/upload-images',
+  protect,
+  authorize('admin', 'agent'),
+  upload.array('images', 4),
+  uploadImages
+);
 
 /**
  * @swagger
@@ -77,23 +111,8 @@ router.post('/upload-images', protect, upload.array('images', 4), uploadImages);
  *           type: number
  *           description: Monthly rent price
  *         location:
- *           type: object
- *           required:
- *             - address
- *             - coordinates
- *           properties:
- *             address:
- *               type: string
- *               description: Full address of the apartment
- *             coordinates:
- *               type: object
- *               properties:
- *                 lat:
- *                   type: number
- *                   description: Latitude coordinate
- *                 lng:
- *                   type: number
- *                   description: Longitude coordinate
+ *           type: string
+ *           description: Full address of the apartment
  *         bedrooms:
  *           type: number
  *           description: Number of bedrooms
