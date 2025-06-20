@@ -1,50 +1,21 @@
 {
-  "name": "apartment-flow-monorepo",
-  "version": "1.0.0",
-  "description": "Backend API for Apartment Flow application",
-  "main": "src/app.js",
+  "name": "apartmentsflow-frontend",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
-    "start": "node src/app.js",
-    "dev": "nodemon src/app.js",
-    "test": "cross-env NODE_ENV=test jest",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "format": "prettier --write .",
-    "prepare": "husky"
-  },
-  "lint-staged": {
-    "src/**/*.js": [
-      "eslint --fix --ignore-path .eslintignore",
-      "prettier --write --ignore-path .prettierignore"
-    ]
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
-    "@googlemaps/google-maps-services-js": "^3.4.1",
-    "axios": "^1.10.0",
-    "bcryptjs": "^2.4.3",
-    "cheerio": "^1.1.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.5.0",
-    "express": "^5.1.0",
-    "express-rate-limit": "^7.5.0",
-    "express-validator": "^7.2.1",
-    "helmet": "^6.0.1",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.15.1",
-    "morgan": "^1.10.0"
+    "axios": "^1.9.0",
+    "next": "15.3.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.27.2",
-    "@eslint/js": "^9.28.0",
-    "cross-env": "^7.0.3",
-    "eslint": "^8.57.1",
-    "globals": "^16.2.0",
-    "husky": "^8.0.3",
-    "jest": "^30.0.0",
-    "lint-staged": "^13.2.1",
-    "mongodb-memory-server": "^10.1.4",
-    "nodemon": "^2.0.22",
-    "prettier": "^2.8.7",
-    "supertest": "^7.1.1"
+    "@tailwindcss/postcss": "^4",
+    "tailwindcss": "^4"
   }
 }

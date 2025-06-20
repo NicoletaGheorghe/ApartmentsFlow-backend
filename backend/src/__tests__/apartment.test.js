@@ -35,10 +35,33 @@ const createTestApartment = (isPublic = true) => ({
   title: `${isPublic ? 'Public' : 'Private'} Apartment`,
   description: `A ${isPublic ? 'public' : 'private'} listing`,
   price: isPublic ? 1000 : 2000,
-  location: isPublic ? '123 Main St, Test City, TS 12345' : '456 Main St, Test City, TS 12345',
+  location: isPublic
+    ? {
+        type: 'Point',
+        coordinates: [12.34, 56.78],
+        address: {
+          country: 'Testland',
+          state: 'Test State',
+          city: 'Test City',
+          street: '123 Main St',
+          zipCode: '12345'
+        }
+      }
+    : {
+        type: 'Point',
+        coordinates: [98.76, 54.32],
+        address: {
+          country: 'Testland',
+          state: 'Test State',
+          city: 'Test City',
+          street: '456 Main St',
+          zipCode: '54321'
+        }
+      },
   bedrooms: isPublic ? 2 : 3,
   bathrooms: isPublic ? 1 : 2,
   area: isPublic ? 1000 : 1500,
+  status: 'available',
   isPublic,
   externalUrl: `https://example.com/${isPublic ? 'public' : 'private'}`,
 });
@@ -212,9 +235,20 @@ describe('Apartment Access Control', () => {
       title: 'Test Apartment',
       description: 'A test listing',
       price: 1000,
-      location: '123 Main St, Test City, TS 12345',
+      location: {
+        type: 'Point',
+        coordinates: [11.11, 22.22],
+        address: {
+          country: 'Testland',
+          state: 'Test State',
+          city: 'Test City',
+          street: '789 Agent St',
+          zipCode: '99999'
+        }
+      },
       bedrooms: 2,
       bathrooms: 1,
+      status: 'available',
       area: 1000,
       isPublic: true,
     };

@@ -10,7 +10,9 @@ A Node.js/Express backend for searching and organizing apartment listings, inclu
 - Comprehensive test suite with Jest
 - Linting and formatting with ESLint and Prettier
 
-## Getting Started
+---
+
+## Backend Setup
 
 ### Prerequisites
 - Node.js (v16+ recommended)
@@ -55,3 +57,29 @@ Contributions are welcome! Please open an issue or submit a pull request.
 
 ## License
 This project is licensed under the MIT License. See [LICENSE](./LICENSE) for details. 
+
+---
+
+## Frontend Setup (Next.js)
+
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+**Save the README file after editing.**
+
+**Check git status** in your terminal to see if the conflict is resolved:
+
+```bash
+git status
+```

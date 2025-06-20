@@ -20,9 +20,23 @@ const apartmentSchema = new mongoose.Schema(
       min: [0, 'Price cannot be negative'],
     },
     location: {
-      type: String,
-      required: [true, 'Please add a location'],
-      trim: true,
+      type: {
+        type: String,
+        enum: ['Point'],
+        required: true,
+        default: 'Point'
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        required: true
+      },
+      address: {
+        street: { type: String, required: true },
+        city: { type: String, required: true },
+        state: { type: String, required: true },
+        zipCode: { type: String, required: true },
+        country: { type: String, required: true }
+      }
     },
     bedrooms: {
       type: Number,
@@ -175,6 +189,9 @@ apartmentSchema.index({ createdAt: -1, isPublic: 1 });
 apartmentSchema.index({ title: 1 });
 apartmentSchema.index({ status: 1 });
 apartmentSchema.index({ isPublic: 1 });
+
+// Add after all other indexes
+apartmentSchema.index({ location: '2dsphere' });
 
 const Apartment = mongoose.model('Apartment', apartmentSchema);
 

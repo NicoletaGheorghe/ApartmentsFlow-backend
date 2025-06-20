@@ -13,10 +13,11 @@ const {
   calculateCommuteDistance,
 } = require('../controllers/apartment.controller');
 const upload = require('../middleware/upload');
+const contentModeration = require('../middleware/contentModeration').contentModeration;
 
 // Validation middleware for creation
 const validateApartmentInput = (req, res, next) => {
-  const { title, description, price, location } = req.body;
+  const { title, description, price, location, bedrooms, bathrooms, area, amenities, status } = req.body;
   const errors = [];
 
   if (!title || title.trim().length < 3) {
@@ -31,8 +32,42 @@ const validateApartmentInput = (req, res, next) => {
     errors.push('Price must be a positive number');
   }
 
-  if (!location || location.trim().length < 3) {
+  // Validate location object
+  if (!location) {
+    errors.push('Location is required');
+  } else if (typeof location === 'object') {
+    if (!location.coordinates || !Array.isArray(location.coordinates) || location.coordinates.length !== 2) {
+      errors.push('Location coordinates are required and must be an array of [longitude, latitude]');
+    }
+    if (!location.address) {
+      errors.push('Location address is required');
+    } else {
+      if (!location.address.street || !location.address.city || !location.address.state || !location.address.zipCode || !location.address.country) {
+        errors.push('Location address must include street, city, state, zipCode, and country');
+      }
+    }
+  } else if (typeof location === 'string' && location.trim().length < 3) {
     errors.push('Location must be at least 3 characters long');
+  }
+
+  if (!bedrooms || isNaN(bedrooms) || bedrooms < 0) {
+    errors.push('Bedrooms must be a non-negative number');
+  }
+
+  if (!bathrooms || isNaN(bathrooms) || bathrooms < 0) {
+    errors.push('Bathrooms must be a non-negative number');
+  }
+
+  if (!area || isNaN(area) || area <= 0) {
+    errors.push('Area must be a positive number');
+  }
+
+  if (!amenities || !Array.isArray(amenities) || amenities.length === 0) {
+    errors.push('Amenities must be a non-empty array');
+  }
+
+  if (!status || !['available', 'rented', 'pending'].includes(status)) {
+    errors.push('Status must be one of: available, rented, pending');
   }
 
   if (errors.length > 0) {
@@ -59,7 +94,7 @@ const validateApartmentUpdate = (req, res, next) => {
     errors.push('Price must be a positive number');
   }
 
-  if (location !== undefined && (!location || location.trim().length < 3)) {
+  if (location !== undefined && (!location || (typeof location === 'string' && location.trim().length < 3))) {
     errors.push('Location must be at least 3 characters long');
   }
 
@@ -76,7 +111,8 @@ router.get('/public', validateApartmentQuery, getApartments); // Public listings
 // Protected routes - require authentication
 router.get('/', protect, validateApartmentQuery, getApartments); // All listings based on role
 router.get('/:id', protect, getApartment);
-router.post('/', protect, authorize('admin', 'agent'), validateApartmentInput, createApartment);
+router.post('/', protect, upload.array('images', 4), validateApartmentInput, createApartment);
+router.post('/json', protect, validateApartmentInput, createApartment); // JSON data without file uploads
 router.put('/:id', protect, validateApartmentUpdate, updateApartment);
 router.delete('/:id', protect, deleteApartment);
 
@@ -87,6 +123,7 @@ router.post(
   protect,
   authorize('admin', 'agent'),
   upload.array('images', 4),
+  contentModeration,
   uploadImages
 );
 

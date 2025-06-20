@@ -131,16 +131,23 @@ const getApartment = async (req, res, next) => {
 // @access  Private
 const createApartment = async (req, res, next) => {
   try {
-    // Only admin and agent can create listings
-    if (req.user.role !== 'admin' && req.user.role !== 'agent') {
-      return res.status(403).json({ error: 'Only admins and agents can create listings' });
-    }
+    // Parse numeric fields from req.body (handles FormData and JSON)
+    if (req.body.price !== undefined) req.body.price = Number(req.body.price);
+    if (req.body.bedrooms !== undefined) req.body.bedrooms = Number(req.body.bedrooms);
+    if (req.body.bathrooms !== undefined) req.body.bathrooms = Number(req.body.bathrooms);
+    if (req.body.area !== undefined) req.body.area = Number(req.body.area);
 
     const apartmentData = {
       ...req.body,
       owner: req.user._id,
       lastUpdated: new Date(),
+      images: [], // Initialize images as an empty array
     };
+
+    // If files were uploaded, add their paths to the apartment data
+    if (req.files && req.files.length > 0) {
+      apartmentData.images = req.files.map((file) => file.path);
+    }
 
     // If this is an external listing, ensure we have the source information
     if (apartmentData.sourceUrl) {

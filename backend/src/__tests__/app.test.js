@@ -53,14 +53,24 @@ describe('App', () => {
         title: 'Test Apartment',
         description: 'A nice place',
         price: 1000,
-        location: '123 Main St, Testville, TS 12345',
+        location: {
+          type: 'Point',
+          coordinates: [12.34, 56.78],
+          address: {
+            country: 'Testland',
+            state: 'Test State',
+            city: 'Testville',
+            street: '123 Main St',
+            zipCode: '12345'
+          }
+        },
         bedrooms: 2,
         bathrooms: 1,
         area: 50,
+        status: 'available',
         amenities: ['WiFi'],
         images: [],
         owner: testUser._id,
-        status: 'available',
       });
 
       const response = await request(app)

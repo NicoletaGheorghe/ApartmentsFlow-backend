@@ -229,7 +229,6 @@ if (process.env.NODE_ENV !== 'test') {
  */
 app.use(
   '/api-docs',
-  cacheManager.middleware(3600), // Cache docs for 1 hour
   swaggerUi.serve,
   swaggerUi.setup(swaggerSpecs, {
     explorer: true,
@@ -260,13 +259,8 @@ const userRoutes = require('./routes/user.routes');
  * SKIPPED in test environment
  */
 app.use('/api/auth', authRoutes);
-if (process.env.NODE_ENV !== 'test') {
-  app.use('/api/apartments', cacheManager.middleware(300), apartmentRoutes); // Cache apartment listings for 5 minutes
-  app.use('/api/commute', cacheManager.middleware(600), commuteRoutes); // Cache commute data for 10 minutes
-} else {
-  app.use('/api/apartments', apartmentRoutes);
-  app.use('/api/commute', commuteRoutes);
-}
+app.use('/api/apartments', apartmentRoutes);
+app.use('/api/commute', commuteRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/users', userRoutes);
 
@@ -280,8 +274,10 @@ app.use('/api/users', userRoutes);
  * - General server errors
  */
 app.use(function (err, req, res, next) {
-  // AI-OPTIMIZED: Log error for debugging
-  console.error(err.stack);
+  // AI-OPTIMIZED: Log error for debugging (but not in test mode for expected errors)
+  if (process.env.NODE_ENV !== 'test' || !err.code) {
+    console.error(err.stack);
+  }
 
   // AI-OPTIMIZED: Handle mongoose validation errors
   if (err.name === 'ValidationError') {
