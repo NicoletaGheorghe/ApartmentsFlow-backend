@@ -27,6 +27,7 @@ const morgan = require('morgan');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./config/swagger');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 
 // AI-OPTIMIZED: Performance and caching modules
 const { connectDB, optimizeQueries, setupConnectionHandlers } = require('./config/database');
@@ -229,7 +230,6 @@ if (process.env.NODE_ENV !== 'test') {
  */
 app.use(
   '/api-docs',
-  cacheManager.middleware(3600), // Cache docs for 1 hour
   swaggerUi.serve,
   swaggerUi.setup(swaggerSpecs, {
     explorer: true,
@@ -261,8 +261,8 @@ const userRoutes = require('./routes/user.routes');
  */
 app.use('/api/auth', authRoutes);
 if (process.env.NODE_ENV !== 'test') {
-  app.use('/api/apartments', cacheManager.middleware(300), apartmentRoutes); // Cache apartment listings for 5 minutes
-  app.use('/api/commute', cacheManager.middleware(600), commuteRoutes); // Cache commute data for 10 minutes
+  app.use('/api/apartments', apartmentRoutes);
+  app.use('/api/commute', commuteRoutes);
 } else {
   app.use('/api/apartments', apartmentRoutes);
   app.use('/api/commute', commuteRoutes);
