@@ -27,7 +27,6 @@ const connectDB = async () => {
 
       // Buffer commands optimization
       bufferCommands: false,
-      bufferMaxEntries: 0,
 
       // Auto index creation (disable in production for performance)
       autoIndex: process.env.NODE_ENV === 'development',

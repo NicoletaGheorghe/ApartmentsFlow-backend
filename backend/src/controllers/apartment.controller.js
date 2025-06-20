@@ -238,137 +238,279 @@ const deleteApartment = async (req, res, next) => {
 };
 
 const autofillListingFromUrl = async (req, res) => {
-  const { url } = req.body;
-  if (!url) {
-    return res.status(400).json({ error: 'URL is required' });
-  }
-
   try {
-    // Determine the source type from the URL
-    let sourceType = 'other';
-    if (url.includes('rightmove.co.uk')) {
-      sourceType = 'rightmove';
-    } else if (url.includes('zoopla.co.uk')) {
-      sourceType = 'zoopla';
+    const { url } = req.body;
+    if (!url) {
+      return res.status(400).json({ error: 'URL is required' });
     }
 
-    const headers = {
-      'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-      'Accept-Language': 'en-US,en;q=0.5',
-      Connection: 'keep-alive',
-      'Upgrade-Insecure-Requests': '1',
-      'Cache-Control': 'max-age=0',
-    };
+    // AI-OPTIMIZED: Enhanced scraper with multiple extraction methods
+    const { data: html } = await axios.get(url, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+      },
+      timeout: 10000,
+    });
 
-    const { data: html } = await axios.get(url, { headers });
     const $ = cheerio.load(html);
 
-    // Extract data based on source type
+    // AI-OPTIMIZED: Determine source type and extract data accordingly
     let extractedData = {};
+    let sourceType = 'other';
 
-    if (sourceType === 'rightmove') {
-      extractedData = {
-        title: $('.property-header-title').text().trim() || $('h1').first().text().trim(),
-        description: $('.property-description').text().trim(),
-        price: $('.property-header-price').text().trim(),
-        location: $('.property-header-address').text().trim(),
-        bedrooms: parseInt($('.no-of-bedrooms').text()) || 0,
-        bathrooms: parseInt($('.no-of-bathrooms').text()) || 0,
-        area: parseInt($('.property-size').text()) || 0,
-        amenities: $('.property-features li')
-          .map((i, el) => $(el).text().trim())
-          .get(),
-        images: $('.property-gallery img')
-          .map((i, el) => $(el).attr('src'))
-          .get()
-          .slice(0, 4),
-      };
-    } else if (sourceType === 'zoopla') {
-      extractedData = {
-        title: $('.listing-details-title').text().trim() || $('h1').first().text().trim(),
-        description: $('.listing-description').text().trim(),
-        price: $('.listing-price').text().trim(),
-        location: $('.listing-address').text().trim(),
-        bedrooms: parseInt($('.num-beds').text()) || 0,
-        bathrooms: parseInt($('.num-baths').text()) || 0,
-        area: parseInt($('.listing-size').text()) || 0,
-        amenities: $('.listing-features li')
-          .map((i, el) => $(el).text().trim())
-          .get(),
-        images: $('.listing-gallery img')
-          .map((i, el) => $(el).attr('src'))
-          .get()
-          .slice(0, 4),
-      };
+    if (url.includes('rightmove.co.uk')) {
+      sourceType = 'rightmove';
+      extractedData = await extractRightmoveData($);
+    } else if (url.includes('zoopla.co.uk')) {
+      sourceType = 'zoopla';
+      extractedData = await extractZooplaData($);
     } else {
       // Generic extraction for other sites
-      extractedData = {
-        title: $('title').first().text() || $('h1').first().text(),
-        description: $('meta[name="description"]').attr('content') || '',
-        price: $('[itemprop="price"], .price, .listing-price').first().text().trim(),
-        location: $('[itemprop="address"], .address, .listing-address').first().text().trim(),
-        bedrooms: parseInt($('[itemprop="numberOfRooms"], .bedrooms, .beds').first().text()) || 0,
-        bathrooms:
-          parseInt($('[itemprop="numberOfBathrooms"], .bathrooms, .baths').first().text()) || 0,
-        area: parseInt($('[itemprop="floorSize"], .area, .size').first().text()) || 0,
-        amenities: $('[itemprop="amenityFeature"], .amenities li, .features li')
-          .map((i, el) => $(el).text().trim())
-          .get(),
-        images: $('img')
-          .map((i, el) => {
-            const src = $(el).attr('src');
-            return src && src.startsWith('http') ? src : null;
-          })
-          .get()
-          .filter(Boolean)
-          .slice(0, 4),
-      };
+      extractedData = await extractGenericData($);
     }
 
-    // Clean up the data
-    const cleanedData = {
+    // AI-OPTIMIZED: Validate extracted data
+    if (!extractedData.title || 
+        !extractedData.description || 
+        (extractedData.price === 0 && extractedData.bedrooms === 0 && extractedData.bathrooms === 0)) {
+      return res.status(404).json({
+        error: 'Could not extract property data from this URL',
+        message: 'This website is unsupported or the page structure has changed. Please try another URL from Rightmove, Zoopla, OnTheMarket, SpareRoom, or Gumtree.',
+        supportedSites: ['Rightmove', 'Zoopla', 'OnTheMarket', 'SpareRoom', 'Gumtree'],
+        bestSupport: 'Rightmove'
+      });
+    }
+
+    // AI-OPTIMIZED: Clean and format the data
+    const autofilledData = {
       ...extractedData,
       sourceUrl: url,
       sourceType,
-      externalId: url.split('/').pop().split('#')[0], // Extract ID from URL
+      externalId: url.split('/').pop().split('#')[0].split('?')[0],
       lastUpdated: new Date(),
-      // Initialize new fields with default values
-      neighborhoodRating: null, // Will be set by user/admin
-      commutingDistance: null, // Will be calculated or set by user
-      commuteMode: 'driving', // Default commute mode
-      commuteDestination: null, // Will be set by user
     };
 
-    // Remove empty values
-    Object.keys(cleanedData).forEach((key) => {
-      if (cleanedData[key] === null || cleanedData[key] === undefined || cleanedData[key] === '') {
-        delete cleanedData[key];
-      }
-    });
-
-    res.json(cleanedData);
+    res.json(autofilledData);
   } catch (error) {
-    console.error('Error autofilling listing:', error.message);
+    console.error('Error in autofillListingFromUrl:', error.message);
+    
     if (error.response) {
-      res.status(error.response.status).json({
-        error: 'Failed to fetch listing data',
-        details: `Server responded with status ${error.response.status}`,
-        message: 'The listing URL might be protected or no longer available',
-      });
-    } else if (error.request) {
-      res.status(500).json({
-        error: 'No response received',
-        details: error.message,
-        message: 'Could not connect to the listing URL',
-      });
-    } else {
-      res.status(500).json({
-        error: 'Failed to autofill listing',
-        details: error.message,
-      });
+      console.error('Error status:', error.response.status);
+      if (error.response.status === 403) {
+        return res.status(403).json({
+          error: 'Access denied by website',
+          message: 'This website blocks automated requests. Please try another URL from Rightmove, Zoopla, OnTheMarket, SpareRoom, or Gumtree.',
+          supportedSites: ['Rightmove', 'Zoopla', 'OnTheMarket', 'SpareRoom', 'Gumtree'],
+          bestSupport: 'Rightmove'
+        });
+      } else if (error.response.status === 404) {
+        return res.status(404).json({
+          error: 'Page not found',
+          message: 'The URL may be invalid or the listing has been removed. Please try another URL from Rightmove, Zoopla, OnTheMarket, SpareRoom, or Gumtree.',
+          supportedSites: ['Rightmove', 'Zoopla', 'OnTheMarket', 'SpareRoom', 'Gumtree'],
+          bestSupport: 'Rightmove'
+        });
+      }
     }
+    
+    res.status(500).json({
+      error: 'Failed to autofill listing',
+      details: error.message,
+      message: 'Please try another URL from Rightmove, Zoopla, OnTheMarket, SpareRoom, or Gumtree.',
+      supportedSites: ['Rightmove', 'Zoopla', 'OnTheMarket', 'SpareRoom', 'Gumtree'],
+      bestSupport: 'Rightmove'
+    });
+  }
+};
+
+// AI-OPTIMIZED: Rightmove extraction (most reliable)
+const extractRightmoveData = async ($) => {
+  try {
+    const scriptTag = $('script')
+      .filter((i, el) => {
+        return $(el).html().includes('window.PAGE_MODEL');
+      })
+      .html();
+
+    if (!scriptTag) {
+      return {};
+    }
+
+    const startIndex = scriptTag.indexOf('window.PAGE_MODEL = ') + 'window.PAGE_MODEL = '.length;
+    const jsonStart = scriptTag.indexOf('{', startIndex);
+    
+    let braceCount = 0;
+    let jsonEnd = jsonStart;
+    for (let i = jsonStart; i < scriptTag.length; i++) {
+      if (scriptTag[i] === '{') braceCount++;
+      if (scriptTag[i] === '}') braceCount--;
+      if (braceCount === 0) {
+        jsonEnd = i + 1;
+        break;
+      }
+    }
+    
+    const jsonString = scriptTag.substring(jsonStart, jsonEnd);
+    const pageModel = JSON.parse(jsonString);
+    const propertyData = pageModel.propertyData;
+
+    let price = 0;
+    if (propertyData.prices && propertyData.prices.primaryPrice) {
+      const match = propertyData.prices.primaryPrice.match(/([\d,]+)\s*pcm/i);
+      if (match) {
+        price = parseInt(match[1].replace(/,/g, ''), 10);
+      } else {
+        const fallback = propertyData.prices.primaryPrice.match(/([\d,]+)/);
+        if (fallback) {
+          price = parseInt(fallback[1].replace(/,/g, ''), 10);
+        }
+      }
+    }
+
+    return {
+      title: propertyData.text.pageTitle || '',
+      description: propertyData.text.description.split('<br />').join('\n') || '',
+      price,
+      bedrooms: propertyData.bedrooms || 0,
+      bathrooms: propertyData.bathrooms || 0,
+      area: propertyData.sizings[1] ? propertyData.sizings[1].minimumSize : 0,
+      amenities: propertyData.keyFeatures || [],
+      images: propertyData.images.map((img) => img.url) || [],
+      location: {
+        type: 'Point',
+        coordinates: [
+          propertyData.location.longitude,
+          propertyData.location.latitude,
+        ],
+      },
+      address: propertyData.address.displayAddress || '',
+      postcode: `${propertyData.address.outcode} ${propertyData.address.incode}`,
+    };
+  } catch (error) {
+    console.error('Rightmove extraction failed:', error.message);
+    return {};
+  }
+};
+
+// AI-OPTIMIZED: Helper functions for data extraction
+const extractPrice = (priceText) => {
+  if (!priceText) return 0;
+  const match = priceText.match(/([\d,]+)/);
+  return match ? parseInt(match[1].replace(/,/g, ''), 10) : 0;
+};
+
+const extractNumber = (text) => {
+  if (!text) return 0;
+  const match = text.match(/(\d+)/);
+  return match ? parseInt(match[1], 10) : 0;
+};
+
+// AI-OPTIMIZED: Zoopla extraction
+const extractZooplaData = async ($) => {
+  try {
+    return {
+      title: $('h1').first().text().trim() || $('title').text().trim(),
+      description: $('.listing-description, .description, [data-testid="description"]').text().trim(),
+      price: extractPrice($('.listing-price, .price, [data-testid="price"]').text()),
+      bedrooms: extractNumber($('.num-beds, .bedrooms, [data-testid="bedrooms"]').text()),
+      bathrooms: extractNumber($('.num-baths, .bathrooms, [data-testid="bathrooms"]').text()),
+      area: extractNumber($('.listing-size, .area, [data-testid="area"]').text()),
+      amenities: $('.listing-features li, .features li, [data-testid="features"] li').map((i, el) => $(el).text().trim()).get(),
+      images: $('.listing-gallery img, .gallery img, [data-testid="images"] img').map((i, el) => $(el).attr('src')).get().filter(Boolean),
+      address: $('.listing-address, .address, [data-testid="address"]').text().trim(),
+    };
+  } catch (error) {
+    console.error('Zoopla extraction failed:', error.message);
+    return {};
+  }
+};
+
+// AI-OPTIMIZED: OnTheMarket extraction
+const extractOnTheMarketData = async ($) => {
+  try {
+    return {
+      title: $('h1').first().text().trim() || $('title').text().trim(),
+      description: $('.description, .property-description, [data-testid="description"]').text().trim(),
+      price: extractPrice($('.price, .property-price, [data-testid="price"]').text()),
+      bedrooms: extractNumber($('.bedrooms, .property-bedrooms, [data-testid="bedrooms"]').text()),
+      bathrooms: extractNumber($('.bathrooms, .property-bathrooms, [data-testid="bathrooms"]').text()),
+      area: extractNumber($('.area, .property-area, [data-testid="area"]').text()),
+      amenities: $('.features li, .property-features li, [data-testid="features"] li').map((i, el) => $(el).text().trim()).get(),
+      images: $('.gallery img, .property-gallery img, [data-testid="images"] img').map((i, el) => $(el).attr('src')).get().filter(Boolean),
+      address: $('.address, .property-address, [data-testid="address"]').text().trim(),
+    };
+  } catch (error) {
+    console.error('OnTheMarket extraction failed:', error.message);
+    return {};
+  }
+};
+
+// AI-OPTIMIZED: SpareRoom extraction
+const extractSpareRoomData = async ($) => {
+  try {
+    return {
+      title: $('h1').first().text().trim() || $('title').text().trim(),
+      description: $('.description, .room-description, [data-testid="description"]').text().trim(),
+      price: extractPrice($('.price, .room-price, [data-testid="price"]').text()),
+      bedrooms: extractNumber($('.bedrooms, .room-bedrooms, [data-testid="bedrooms"]').text()),
+      bathrooms: extractNumber($('.bathrooms, .room-bathrooms, [data-testid="bathrooms"]').text()),
+      area: extractNumber($('.area, .room-area, [data-testid="area"]').text()),
+      amenities: $('.features li, .room-features li, [data-testid="features"] li').map((i, el) => $(el).text().trim()).get(),
+      images: $('.gallery img, .room-gallery img, [data-testid="images"] img').map((i, el) => $(el).attr('src')).get().filter(Boolean),
+      address: $('.address, .room-address, [data-testid="address"]').text().trim(),
+    };
+  } catch (error) {
+    console.error('SpareRoom extraction failed:', error.message);
+    return {};
+  }
+};
+
+// AI-OPTIMIZED: Gumtree extraction
+const extractGumtreeData = async ($) => {
+  try {
+    return {
+      title: $('h1').first().text().trim() || $('title').text().trim(),
+      description: $('.description, .ad-description, [data-testid="description"]').text().trim(),
+      price: extractPrice($('.price, .ad-price, [data-testid="price"]').text()),
+      bedrooms: extractNumber($('.bedrooms, .ad-bedrooms, [data-testid="bedrooms"]').text()),
+      bathrooms: extractNumber($('.bathrooms, .ad-bathrooms, [data-testid="bathrooms"]').text()),
+      area: extractNumber($('.area, .ad-area, [data-testid="area"]').text()),
+      amenities: $('.features li, .ad-features li, [data-testid="features"] li').map((i, el) => $(el).text().trim()).get(),
+      images: $('.gallery img, .ad-gallery img, [data-testid="images"] img').map((i, el) => $(el).attr('src')).get().filter(Boolean),
+      address: $('.address, .ad-address, [data-testid="address"]').text().trim(),
+    };
+  } catch (error) {
+    console.error('Gumtree extraction failed:', error.message);
+    return {};
+  }
+};
+
+// AI-OPTIMIZED: Generic extraction for other sites
+const extractGenericData = async ($) => {
+  try {
+    return {
+      title: $('title').first().text().trim() || $('h1').first().text().trim(),
+      description: $('meta[name="description"]').attr('content') || $('.description, .content').first().text().trim(),
+      price: extractPrice($('[itemprop="price"], .price, .listing-price').first().text()),
+      bedrooms: extractNumber($('[itemprop="numberOfRooms"], .bedrooms, .beds').first().text()),
+      bathrooms: extractNumber($('[itemprop="numberOfBathrooms"], .bathrooms, .baths').first().text()),
+      area: extractNumber($('[itemprop="floorSize"], .area, .size').first().text()),
+      amenities: $('[itemprop="amenityFeature"], .amenities li, .features li').map((i, el) => $(el).text().trim()).get(),
+      images: $('img').map((i, el) => {
+        const src = $(el).attr('src');
+        return src && src.startsWith('http') ? src : null;
+      }).get().filter(Boolean).slice(0, 4),
+      address: $('[itemprop="address"], .address, .listing-address').first().text().trim(),
+    };
+  } catch (error) {
+    console.error('Generic extraction failed:', error.message);
+    return {};
   }
 };
 

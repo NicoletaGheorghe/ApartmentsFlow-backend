@@ -130,10 +130,14 @@ const memoryMonitor = (req, res, next) => {
   const heapTotalMB = memoryUsage.heapTotal / 1024 / 1024;
   const heapUsagePercent = (heapUsedMB / heapTotalMB) * 100;
 
-  // Log high memory usage (over 80%)
-  if (heapUsagePercent > 80) {
+  // AI-OPTIMIZED: Log high memory usage only if it exceeds a reasonable threshold
+  // This avoids noisy logs when the absolute memory usage is low.
+  const highUsageThreshold = 95; // 95%
+  const absoluteMemoryThresholdMB = 100; // 100 MB
+
+  if (heapUsagePercent > highUsageThreshold && heapUsedMB > absoluteMemoryThresholdMB) {
     console.warn(
-      `HIGH MEMORY USAGE: ${heapUsagePercent.toFixed(2)}% (${heapUsedMB.toFixed(
+      `HIGH MEMORY ALERT: ${heapUsagePercent.toFixed(2)}% (${heapUsedMB.toFixed(
         2
       )}MB / ${heapTotalMB.toFixed(2)}MB)`
     );
