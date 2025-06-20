@@ -100,10 +100,21 @@ describe('Apartment Features', () => {
         title: 'Test Apartment',
         description: 'A test apartment',
         price: 1000,
-        location: 'Test Location',
+        location: {
+          type: 'Point',
+          coordinates: [12.34, 56.78],
+          address: {
+            country: 'Testland',
+            state: 'Test State',
+            city: 'Test City',
+            street: '123 Test St',
+            zipCode: '12345'
+          }
+        },
         bedrooms: 2,
         bathrooms: 1,
         area: 100,
+        status: 'available',
         amenities: ['Parking', 'Gym'],
         isPublic: true,
       });
@@ -158,10 +169,21 @@ describe('Apartment Features', () => {
           title: 'Test Apartment for Update',
           description: 'A test apartment for updating',
           price: 1000,
-          location: 'Test Location',
+          location: {
+            type: 'Point',
+            coordinates: [12.34, 56.78],
+            address: {
+              country: 'Testland',
+              state: 'Test State',
+              city: 'Test City',
+              street: '123 Test St',
+              zipCode: '12345'
+            }
+          },
           bedrooms: 2,
           bathrooms: 1,
           area: 100,
+          status: 'available',
           isPublic: true,
         });
       testApartment = createResponse.body;
@@ -174,10 +196,21 @@ describe('Apartment Features', () => {
         title: 'Updated Test Apartment',
         description: 'An updated test apartment',
         price: 1200,
-        location: 'Updated Test Location',
+        location: {
+          type: 'Point',
+          coordinates: [98.76, 54.32],
+          address: {
+            country: 'Testland',
+            state: 'Test State',
+            city: 'Test City',
+            street: '456 Update St',
+            zipCode: '54321'
+          }
+        },
         bedrooms: 2,
         bathrooms: 1,
         area: 100,
+        status: 'available',
         // Note: Agents cannot change isPublic status, only admins can
       });
 
@@ -199,10 +232,21 @@ describe('Apartment Features', () => {
         title: 'External Source Apartment',
         description: 'From external source',
         price: 1500,
-        location: 'External Location',
+        location: {
+          type: 'Point',
+          coordinates: [23.45, 67.89],
+          address: {
+            country: 'Testland',
+            state: 'Test State',
+            city: 'Test City',
+            street: '789 External Ave',
+            zipCode: '67890'
+          }
+        },
         bedrooms: 3,
         bathrooms: 2,
         area: 150,
+        status: 'available',
         sourceUrl: 'https://www.rightmove.co.uk/properties/123456',
         sourceType: 'rightmove',
         externalId: '123456',
@@ -226,10 +270,21 @@ describe('Apartment Features', () => {
           title: 'Test Apartment for Images',
           description: 'A test apartment for image management',
           price: 1000,
-          location: 'Test Location',
+          location: {
+            type: 'Point',
+            coordinates: [12.34, 56.78],
+            address: {
+              country: 'Testland',
+              state: 'Test State',
+              city: 'Test City',
+              street: '123 Test St',
+              zipCode: '12345'
+            }
+          },
           bedrooms: 2,
           bathrooms: 1,
           area: 100,
+          status: 'available',
           isPublic: true,
         });
       testApartment = createResponse.body;
@@ -276,10 +331,21 @@ describe('Apartment Features', () => {
           title: 'Test Apartment for Ratings',
           description: 'A test apartment for neighborhood ratings',
           price: 1000,
-          location: 'Test Location',
+          location: {
+            type: 'Point',
+            coordinates: [12.34, 56.78],
+            address: {
+              country: 'Testland',
+              state: 'Test State',
+              city: 'Test City',
+              street: '123 Test St',
+              zipCode: '12345'
+            }
+          },
           bedrooms: 2,
           bathrooms: 1,
           area: 100,
+          status: 'available',
           isPublic: true,
         });
       testApartment = createResponse.body;
