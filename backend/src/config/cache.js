@@ -98,43 +98,6 @@ class CacheManager {
     };
   }
 
-  // Cache middleware for Express routes
-  middleware(ttl = 600) {
-    return (req, res, next) => {
-      // Skip caching in test environment
-      if (process.env.NODE_ENV === 'test') {
-        return next();
-      }
-
-      // Skip caching for non-GET requests
-      if (req.method !== 'GET') {
-        return next();
-      }
-
-      const key = `cache:${req.originalUrl}`;
-      const cachedResponse = this.get(key);
-
-      if (cachedResponse) {
-        return res.json(cachedResponse);
-      }
-
-      // Store original send method
-      const originalJson = res.json;
-
-      // Override send method to cache response
-      res.json = function (data) {
-        try {
-          this.set(key, data, ttl);
-        } catch (error) {
-          // Cache error, continue without caching
-        }
-        return originalJson.call(this, data);
-      }.bind(this);
-
-      next();
-    };
-  }
-
   // Cache apartment listings with optimized TTL
   cacheApartments(key, data, filters = {}) {
     // Shorter TTL for filtered results

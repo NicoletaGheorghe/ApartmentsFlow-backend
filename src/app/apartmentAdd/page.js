@@ -21,7 +21,7 @@ export default function ApartmentAdd() {
         bathrooms: "",
         area: "",
         amenities: "",
-        images: "",
+        images: null,
         status: "",
         });
         const [errors, setErrors] = useState({});
@@ -121,31 +121,38 @@ export default function ApartmentAdd() {
           if (validateForm()) {
             setLoading(true);
             try{
-                 const apiClient = new ApiClient();
-                const location = {
-                        type: "Point",
-                        coordinates: [Number(formData.longitude), Number(formData.latitude)],
-                        address: {
-                        street: formData.street,
-                        city: formData.city,
-                        state: formData.state,
-                        zipCode: formData.zipCode,
-                        country: formData.country,
-                        },
-                    };
+                const apiClient = new ApiClient();
 
-                   await apiClient.createApartment(
-                    formData.title,
-                    formData.description,
-                    Number(formData.price),
-                    location,
-                    Number(formData.bedrooms),
-                    Number(formData.bathrooms),
-                    Number(formData.area),
-                    formData.amenities.split(",").map((a) => a.trim()),
-                    formData.images ? formData.images.split(",").map((img) => img.trim()) : [], 
-                    formData.status,
-                 );
+                // Check if user is logged in
+                if (!apiClient.isLoggedIn()) {
+                    window.location.href = "/auth/unauthorized";
+                    return;
+                }
+
+                const submissionData = new FormData();
+                submissionData.append("title", formData.title);
+                submissionData.append("description", formData.description);
+                submissionData.append("price", Number(formData.price));
+                submissionData.append("bedrooms", Number(formData.bedrooms));
+                submissionData.append("bathrooms", Number(formData.bathrooms));
+                submissionData.append("area", Number(formData.area));
+                submissionData.append("amenities", formData.amenities);
+                submissionData.append("status", formData.status);
+                submissionData.append("location[type]", "Point");
+                submissionData.append("location[coordinates][0]", Number(formData.longitude));
+                submissionData.append("location[coordinates][1]", Number(formData.latitude));
+                submissionData.append("location[address][street]", formData.street);
+                submissionData.append("location[address][city]", formData.city);
+                submissionData.append("location[address][state]", formData.state);
+                submissionData.append("location[address][zipCode]", formData.zipCode);
+                submissionData.append("location[address][country]", formData.country);
+
+                if (formData.images) {
+                    submissionData.append("images", formData.images);
+                }
+
+                await apiClient.createApartment(submissionData);
+
                  setSuccess(true);
                  setFormData({
                     title: "",
@@ -162,7 +169,7 @@ export default function ApartmentAdd() {
                     bathrooms: "",
                     area: "",
                     amenities: "",
-                    images: "",
+                    images: null,
                     status: "",
                  });
                  setAutocompleteValue("");
@@ -177,8 +184,12 @@ export default function ApartmentAdd() {
           }
         };
             const handleChange = (e) => {
-                const { name, value } = e.target;
-                setFormData((prev) => ({ ...prev, [name]: value }));
+                const { name, value, files } = e.target;
+                if (name === "images") {
+                    setFormData((prev) => ({ ...prev, images: files[0] }));
+                } else {
+                    setFormData((prev) => ({ ...prev, [name]: value }));
+                }
                 if (errors[name]) {
                 setErrors((prev) => ({ ...prev, [name]: "" }));
                 }
@@ -374,11 +385,9 @@ export default function ApartmentAdd() {
             <div>
                 <Input
                 label="Images"
-                type="text"
+                type="file"
                 name="images"
-                value={formData.images}
                 onChange={handleChange}
-                placeholder="Add images"
                 />
             </div>
             <div>

@@ -1,12 +1,16 @@
 import axios from "axios";
-const url = "http://localhost:3001/api";
 
+// Base URL for the API
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api";
 
 export class ApiClient {
-    constructor() {
+    constructor(getAuthToken, clearAuthToken) {
+        this.getAuthToken = getAuthToken;
+        this.clearAuthToken = clearAuthToken;
         this.axiosInstance = axios.create({
-            headers:{
-                Authorization: `Bearer ${this.getToken()}`,
+            baseURL: API_BASE_URL,
+            headers: {
+                "Content-Type": "application/json",
             },
         });
         this.axiosInstance.interceptors.request.use(
@@ -62,28 +66,23 @@ export class ApiClient {
             return isLoggedIn;
         }
 
-        async apiCall(method, url, data) {
+        async apiCall(method, url, data, config = {}) {
             try {
-            const response = await this.axiosInstance({
-                method,
-                url,
-                data,
-            });
-            return response;
+                const response = await this.axiosInstance({
+                    method,
+                    url,
+                    data,
+                    ...config,
+                });
+                return response;
             } catch (error) {
-            console.error('API call error:', error.response?.data || error.message || error); 
-            if (error.response && error.response.status === 401) {
-                this.removeToken();
-                if (typeof window !== 'undefined') {
-                window.location.href = '/auth/unauthorized';
-                }
-            }
-            throw error;
+                console.error("API call error:", error.response ? error.response.data : error.message);
+                throw error;
             }
         }
        async login(email, password) {
             try {
-                const response = await this.apiCall("post", url + "/auth/login", { email, password });
+                const response = await this.apiCall("post", API_BASE_URL + "/auth/login", { email, password });
                 
                 if (response.data && response.data.token) {
                     this.setToken(response.data.token);
@@ -101,7 +100,7 @@ export class ApiClient {
            const token = this.getToken();
             try {
                 if (token) {
-                    await this.apiCall("post", url + "/auth/logout", {token});
+                    await this.apiCall("post", API_BASE_URL + "/auth/logout", {token});
                 }
             }catch (error) {
                 console.error('Logout error:', error?.response?.data || error.message);
@@ -114,7 +113,7 @@ export class ApiClient {
  } 
        async register(name, email, password) {
           try {
-            const response = await this.apiCall("post", url + "/auth/register", { name, email, password });
+            const response = await this.apiCall("post", API_BASE_URL + "/auth/register", { name, email, password });
           if (response.data && response.data.token) {
                     this.setToken(response.data.token);
                     return response;
@@ -129,7 +128,7 @@ export class ApiClient {
        }
        async getProfile() {
         try{
-            const response = await this.apiCall("get", url + "/users/profile");
+            const response = await this.apiCall("get", API_BASE_URL + "/users/profile");
             return response;
         } catch (error) {
             console.error("Failed to fetch user profile:", error);
@@ -139,7 +138,7 @@ export class ApiClient {
 
        async updateProfile(data) {
             try {
-                  const response = await this.apiCall("put", url + "/users/profile", data);
+                  const response = await this.apiCall("put", API_BASE_URL + "/users/profile", data);
                     return response.data;
         
             } catch (error) {
@@ -147,65 +146,28 @@ export class ApiClient {
                 }
        }
        async removeProfile() {
-            const response = await this.apiCall("delete", url + "/users/profile");
+            const response = await this.apiCall("delete", API_BASE_URL + "/users/profile");
             return response.data;
         }
 
-       async createApartment(
-        title,
-        description,
-        price,
-        location,
-        bedrooms,
-        bathrooms,
-        area,
-        amenities,
-        images,
-        status
-       ) {
-        try {
-            const numericPrice = Number(price);
-            const numericBedrooms = Number(bedrooms);
-            const numericBathrooms = Number(bathrooms);
-            const numericArea = Number(area);
-            if (isNaN(numericPrice)) {
-                throw new Error("Price must be a valid number.");
-            }
-            if (isNaN(numericBedrooms)) {
-                throw new Error("Bedrooms must be a valid number.");
-            }
-            if (isNaN(numericBathrooms)) {
-                throw new Error ("Bathrooms must be a valid number.");
-            }
-            if (isNaN(numericArea)) {
-                throw new Error ("Area must be a valid number.");
-            }
-            return this.apiCall("post", url + "/apartments", {
-                title,
-                description,
-                price : numericPrice,
-                location,
-                bedrooms: numericBedrooms,
-                bathrooms: numericBathrooms,
-                area: numericArea,
-                amenities,
-                images,
-                status
-            });
-        } catch (error) {
-            console.error("addAd error:", error.response || error); 
-            throw error;
-            }
-       }
-       async getApartments(params = {page, limit}) {
+       async createApartment(formData) {
+        return this.apiCall("post", "/apartments", formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+    }
+
+       async getApartments(page = 1, limit = 6, filters = {}) {
+            const params = new URLSearchParams({ page, limit, ...filters });
             try {
                 const queryString = new URLSearchParams(params).toString();
-                const endpoint = url + "/apartments" + (queryString ? `?${queryString}` : "") ;
+                const endpoint = API_BASE_URL + "/apartments" + (queryString ? `?${queryString}` : "") ;
                 const response = await this.apiCall("get", endpoint);
                 return response;
             } catch (error) {
                 throw error;
             }
         }
-      
+
 }
