@@ -32,12 +32,7 @@ const Dropdown = () => {
                     className="avatar-button w-8 h-8 rounded-full overflow-hidden focus:outline-none"
                     onClick={toggleDropdown}
                 >
-                    <img 
-                        src={user?.avatar || '/default-avatar.png'} 
-                        alt="avatar" 
-                        className="w-full h-full object-cover block"
-                        style={{ height: 'auto' }}
-                    />
+                    <img src = {user?.avatar || '/default-avatar.png'} alt="avatar" className="w-full h-full object-cover block"/>
                        
                 </button>
 
