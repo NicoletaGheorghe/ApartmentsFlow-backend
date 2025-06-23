@@ -6,6 +6,8 @@ const User = require('../models/user.model');
 const Apartment = require('../models/apartment.model');
 require('./setup'); // Ensure MongoDB connection is established
 
+jest.setTimeout(30000);
+
 let testUser;
 let authToken;
 

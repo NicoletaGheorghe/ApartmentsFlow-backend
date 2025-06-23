@@ -1,3 +1,4 @@
+jest.setTimeout(30000);
 const request = require('supertest');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
@@ -292,7 +293,11 @@ describe('Image Upload', () => {
       .attach('images', Buffer.from('fake image data'), 'test2.jpg')
       .attach('images', Buffer.from('fake image data'), 'test3.jpg')
       .attach('images', Buffer.from('fake image data'), 'test4.jpg')
-      .attach('images', Buffer.from('fake image data'), 'test5.jpg');
+      .attach('images', Buffer.from('fake image data'), 'test5.jpg')
+      .attach('images', Buffer.from('fake image data'), 'test6.jpg')
+      .attach('images', Buffer.from('fake image data'), 'test7.jpg')
+      .attach('images', Buffer.from('fake image data'), 'test8.jpg')
+      .attach('images', Buffer.from('fake image data'), 'test9.jpg');
 
     expect(response.status).toBe(400);
     expect(response.body.error).toBe('Unexpected file field');

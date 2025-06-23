@@ -411,9 +411,9 @@ const uploadImages = async (req, res) => {
       return res.status(400).json({ error: 'No images uploaded' });
     }
 
-    // Limit to 4 images per upload
-    if (req.files.length > 4) {
-      return res.status(400).json({ error: 'Maximum 4 images allowed per upload' });
+    // Limit to 8 images per upload
+    if (req.files.length > 8) {
+      return res.status(400).json({ error: 'Maximum 8 images allowed per upload' });
     }
 
     const cloudinary = require('../config/cloudinary');

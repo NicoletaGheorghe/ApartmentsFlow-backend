@@ -328,7 +328,7 @@ app.use(function (err, req, res, next) {
   if (err.code === 'LIMIT_FILE_COUNT') {
     return res.status(400).json({
       error: 'Too many files uploaded',
-      details: 'Maximum 4 images allowed per upload',
+      details: 'Maximum 8 images allowed per upload',
     });
   }
 
