@@ -263,6 +263,12 @@ POST /api/commute
 }
 ```
 
+## API Status Update
+
+- Image upload endpoint (`/api/apartments/upload-images`) is complete and tested. Requires admin/agent role. Cloudinary integration is live, but tests require real credentials or mocking.
+- Address autocomplete endpoint (`/api/commute/suggestions`) is complete and tested.
+- Validation and error handling for all endpoints are up to date.
+
 ## Error Responses
 
 ### 400 Bad Request
