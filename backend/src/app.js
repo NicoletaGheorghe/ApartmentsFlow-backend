@@ -27,6 +27,7 @@ const morgan = require('morgan');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./config/swagger');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 
 // AI-OPTIMIZED: Performance and caching modules
 const { connectDB, optimizeQueries, setupConnectionHandlers } = require('./config/database');
@@ -263,6 +264,12 @@ app.use('/api/apartments', apartmentRoutes);
 app.use('/api/commute', commuteRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/users', userRoutes);
+
+/**
+ * AI-OPTIMIZED: Static File Serving
+ * Serve uploaded images and other static files
+ */
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 /**
  * AI-OPTIMIZED: Error Handling Middleware

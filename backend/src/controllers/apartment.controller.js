@@ -142,6 +142,15 @@ const createApartment = async (req, res, next) => {
       req.body.amenities = req.body.amenities.split(',').map(item => item.trim()).filter(item => item.length > 0);
     }
 
+    // Parse location JSON string if it's a string
+    if (req.body.location && typeof req.body.location === 'string') {
+      try {
+        req.body.location = JSON.parse(req.body.location);
+      } catch (error) {
+        return res.status(400).json({ error: 'Invalid location format' });
+      }
+    }
+
     const apartmentData = {
       ...req.body,
       owner: req.user._id,
@@ -151,7 +160,11 @@ const createApartment = async (req, res, next) => {
 
     // If files were uploaded, add their paths to the apartment data
     if (req.files && req.files.length > 0) {
-      apartmentData.images = req.files.map((file) => file.path);
+      apartmentData.images = req.files.map((file, index) => ({
+        url: `uploads/${file.filename}`,
+        publicId: file.filename, // Using filename as publicId for now
+        isMain: index === 0 // First image is main image
+      }));
     }
 
     // If this is an external listing, ensure we have the source information
