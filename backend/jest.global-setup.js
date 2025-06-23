@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
 
-// Load .env file from the correct location
-const envPath = path.resolve('C:', 'Projects', 'ApartmentSearch', 'backend', '.env');
+// Load .env file from the current project directory
+const envPath = path.resolve(__dirname, '.env');
 console.log('Looking for .env file at:', envPath);
 dotenv.config({ path: envPath });
 

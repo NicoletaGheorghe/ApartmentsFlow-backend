@@ -17,6 +17,10 @@ const contentModeration = require('../middleware/contentModeration').contentMode
 
 // Validation middleware for creation
 const validateApartmentInput = (req, res, next) => {
+  // Convert amenities from comma-separated string to array if needed
+  if (req.body.amenities && typeof req.body.amenities === 'string') {
+    req.body.amenities = req.body.amenities.split(',').map(item => item.trim()).filter(item => item.length > 0);
+  }
   const { title, description, price, location, bedrooms, bathrooms, area, amenities, status } = req.body;
   const errors = [];
 

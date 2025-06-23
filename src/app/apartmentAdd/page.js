@@ -87,7 +87,9 @@ export default function ApartmentAdd() {
             if (!formData.bedrooms.trim()) newErrors.bedrooms = "Bedrooms are required.";
             if (!formData.bathrooms.trim()) newErrors.bathrooms = "Bathrooms are required.";
             if (!formData.area.trim()) newErrors.area = "Area is required.";
-            if (!formData.amenities.trim()) newErrors.amenities = "Amenities are required.";
+            if (!formData.amenities.trim() || formData.amenities.trim().split(',').filter(item => item.trim()).length === 0) {
+                newErrors.amenities = "Amenities are required (enter at least one amenity).";
+            }
             if (!formData.status.trim()) newErrors.status = "Status is required.";
             if (formData.price && (isNaN(Number(formData.price)) || Number(formData.price) < 0)) {
                 newErrors.price = "Please enter a valid price.";
@@ -151,6 +153,25 @@ export default function ApartmentAdd() {
                     submissionData.append("images", formData.images);
                 }
 
+                // Debug: Log what's being sent
+                console.log("Form data being sent:", {
+                    title: formData.title,
+                    description: formData.description,
+                    price: formData.price,
+                    bedrooms: formData.bedrooms,
+                    bathrooms: formData.bathrooms,
+                    area: formData.area,
+                    amenities: formData.amenities,
+                    status: formData.status,
+                    street: formData.street,
+                    city: formData.city,
+                    state: formData.state,
+                    zipCode: formData.zipCode,
+                    country: formData.country,
+                    latitude: formData.latitude,
+                    longitude: formData.longitude
+                });
+
                 await apiClient.createApartment(submissionData);
 
                  setSuccess(true);
@@ -176,9 +197,16 @@ export default function ApartmentAdd() {
                  setSuggestions([]);
             } catch (error) {
                 console.error("Error listing an apartment.", error.response || error);
+                console.log("Full error object:", error);
+                console.log("Error response data:", error.response?.data);
+                console.log("Error response status:", error.response?.status);
                 setErrors({
-                    submit: error.response?.data?.message || "Failed to list an apartment. Please try again.",  
-                }); 
+                    submit:
+                        (error.response?.data?.details && error.response.data.details.join(', ')) ||
+                        error.response?.data?.message ||
+                        error.response?.data?.error ||
+                        "Failed to list an apartment. Please try again.",
+                });
              }
              setLoading(false);
           }

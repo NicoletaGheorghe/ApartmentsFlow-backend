@@ -137,6 +137,11 @@ const createApartment = async (req, res, next) => {
     if (req.body.bathrooms !== undefined) req.body.bathrooms = Number(req.body.bathrooms);
     if (req.body.area !== undefined) req.body.area = Number(req.body.area);
 
+    // Convert amenities from comma-separated string to array if needed
+    if (req.body.amenities && typeof req.body.amenities === 'string') {
+      req.body.amenities = req.body.amenities.split(',').map(item => item.trim()).filter(item => item.length > 0);
+    }
+
     const apartmentData = {
       ...req.body,
       owner: req.user._id,
