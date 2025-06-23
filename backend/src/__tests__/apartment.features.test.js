@@ -83,12 +83,9 @@ afterAll(async () => {
 });
 
 describe('Apartment Features', () => {
-  let testApartment;
-
   beforeEach(async () => {
     // Clear apartments before each test
     await Apartment.deleteMany({});
-    testApartment = null;
   });
 
   // Test 1: Manual Creation
@@ -117,6 +114,7 @@ describe('Apartment Features', () => {
         status: 'available',
         amenities: ['Parking', 'Gym'],
         isPublic: true,
+        owner: testUser._id,
       });
 
     if (response.status !== 201) {
@@ -124,7 +122,6 @@ describe('Apartment Features', () => {
     }
     expect(response.status).toBe(201);
     expect(response.body.title).toBe('Test Apartment');
-    testApartment = response.body;
   });
 
   // Test 2: Autofill from External Site
@@ -158,36 +155,37 @@ describe('Apartment Features', () => {
     expect(response.body.images[0].url).toContain('cloudinary.com');
   }, 10000); // Increase timeout to 10 seconds
 
-  // Test 4: Update Apartment (requires testApartment from first test)
+  // Test 4: Update Apartment
   test('should update apartment details', async () => {
-    // Create an apartment first if testApartment is not available
-    if (!testApartment) {
-      const createResponse = await request(app)
-        .post('/api/apartments')
-        .set('Authorization', `Bearer ${testToken}`)
-        .send({
-          title: 'Test Apartment for Update',
-          description: 'A test apartment for updating',
-          price: 1000,
-          location: {
-            type: 'Point',
-            coordinates: [12.34, 56.78],
-            address: {
-              country: 'Testland',
-              state: 'Test State',
-              city: 'Test City',
-              street: '123 Test St',
-              zipCode: '12345'
-            }
-          },
-          bedrooms: 2,
-          bathrooms: 1,
-          area: 100,
-          status: 'available',
-          isPublic: true,
-        });
-      testApartment = createResponse.body;
-    }
+    // Create a fresh apartment for this test
+    const createResponse = await request(app)
+      .post('/api/apartments')
+      .set('Authorization', `Bearer ${testToken}`)
+      .send({
+        title: 'Test Apartment for Update',
+        description: 'A test apartment for updating',
+        price: 1000,
+        location: {
+          type: 'Point',
+          coordinates: [12.34, 56.78],
+          address: {
+            country: 'Testland',
+            state: 'Test State',
+            city: 'Test City',
+            street: '123 Test St',
+            zipCode: '12345'
+          }
+        },
+        bedrooms: 2,
+        bathrooms: 1,
+        area: 100,
+        status: 'available',
+        isPublic: true,
+        owner: testUser._id,
+        amenities: ['Parking', 'Gym'],
+      });
+    expect(createResponse.status).toBe(201);
+    const testApartment = createResponse.body;
 
     const response = await request(app)
       .put(`/api/apartments/${testApartment._id}`)
@@ -196,31 +194,12 @@ describe('Apartment Features', () => {
         title: 'Updated Test Apartment',
         description: 'An updated test apartment',
         price: 1200,
-        location: {
-          type: 'Point',
-          coordinates: [98.76, 54.32],
-          address: {
-            country: 'Testland',
-            state: 'Test State',
-            city: 'Test City',
-            street: '456 Update St',
-            zipCode: '54321'
-          }
-        },
-        bedrooms: 2,
-        bathrooms: 1,
-        area: 100,
-        status: 'available',
-        // Note: Agents cannot change isPublic status, only admins can
       });
 
-    if (response.status !== 200) {
-      console.log('DEBUG: Update response body:', response.body);
-    }
     expect(response.status).toBe(200);
     expect(response.body.title).toBe('Updated Test Apartment');
     expect(response.body.price).toBe(1200);
-    // Don't test isPublic since agents can't change it
+    expect(response.body.description).toBe('An updated test apartment');
   });
 
   // Test 5: External Source Tracking
@@ -250,6 +229,8 @@ describe('Apartment Features', () => {
         sourceUrl: 'https://www.rightmove.co.uk/properties/123456',
         sourceType: 'rightmove',
         externalId: '123456',
+        owner: testUser._id,
+        amenities: ['Parking', 'Gym', 'WiFi'],
       });
 
     expect(response.status).toBe(201);
@@ -259,99 +240,86 @@ describe('Apartment Features', () => {
     expect(response.body).toHaveProperty('lastUpdated');
   });
 
-  // Test 6: Image Management (requires testApartment)
+  // Test 6: Manage apartment images
   test('should manage apartment images', async () => {
-    // Create an apartment first if testApartment is not available
-    if (!testApartment) {
-      const createResponse = await request(app)
-        .post('/api/apartments')
-        .set('Authorization', `Bearer ${testToken}`)
-        .send({
-          title: 'Test Apartment for Images',
-          description: 'A test apartment for image management',
-          price: 1000,
-          location: {
-            type: 'Point',
-            coordinates: [12.34, 56.78],
-            address: {
-              country: 'Testland',
-              state: 'Test State',
-              city: 'Test City',
-              street: '123 Test St',
-              zipCode: '12345'
-            }
-          },
-          bedrooms: 2,
-          bathrooms: 1,
-          area: 100,
-          status: 'available',
-          isPublic: true,
-        });
-      testApartment = createResponse.body;
-    }
+    // Create a fresh apartment for this test
+    const createResponse = await request(app)
+      .post('/api/apartments')
+      .set('Authorization', `Bearer ${testToken}`)
+      .send({
+        title: 'Test Apartment for Images',
+        description: 'A test apartment for image management',
+        price: 1000,
+        location: {
+          type: 'Point',
+          coordinates: [12.34, 56.78],
+          address: {
+            country: 'Testland',
+            state: 'Test State',
+            city: 'Test City',
+            street: '123 Test St',
+            zipCode: '12345'
+          }
+        },
+        bedrooms: 2,
+        bathrooms: 1,
+        area: 100,
+        status: 'available',
+        isPublic: true,
+        owner: testUser._id,
+        amenities: ['Parking', 'Gym'],
+      });
+    expect(createResponse.status).toBe(201);
+    const testApartment = createResponse.body;
 
-    // Mock image data since Cloudinary upload will fail in tests
     const mockImages = [
-      {
-        url: 'https://res.cloudinary.com/test/image/upload/test1.jpg',
-        publicId: 'test1',
-        isMain: true,
-      },
-      {
-        url: 'https://res.cloudinary.com/test/image/upload/test2.jpg',
-        publicId: 'test2',
-        isMain: false,
-      },
+      { url: 'https://res.cloudinary.com/test/image/upload/mock-image1.jpg', isMain: true },
+      { url: 'https://res.cloudinary.com/test/image/upload/mock-image2.jpg', isMain: false },
     ];
 
-    // Update apartment with mock images
     const response = await request(app)
       .put(`/api/apartments/${testApartment._id}`)
       .set('Authorization', `Bearer ${testToken}`)
-      .send({
-        images: mockImages,
-      });
+      .send({ images: mockImages });
 
-    if (response.status !== 200) {
-      console.log('DEBUG: Image management response body:', response.body);
-    }
     expect(response.status).toBe(200);
     expect(response.body.images).toHaveLength(mockImages.length);
     expect(response.body.images[0].isMain).toBe(true);
+    expect(response.body.images[1].isMain).toBe(false);
   });
 
-  // Test 7: Neighborhood Rating and Commuting Distance
+  // Test 7: Handle neighborhood rating and commuting distance
   test('should handle neighborhood rating and commuting distance', async () => {
-    // Create an apartment first if testApartment is not available
-    if (!testApartment) {
-      const createResponse = await request(app)
-        .post('/api/apartments')
-        .set('Authorization', `Bearer ${testToken}`)
-        .send({
-          title: 'Test Apartment for Ratings',
-          description: 'A test apartment for neighborhood ratings',
-          price: 1000,
-          location: {
-            type: 'Point',
-            coordinates: [12.34, 56.78],
-            address: {
-              country: 'Testland',
-              state: 'Test State',
-              city: 'Test City',
-              street: '123 Test St',
-              zipCode: '12345'
-            }
-          },
-          bedrooms: 2,
-          bathrooms: 1,
-          area: 100,
-          status: 'available',
-          isPublic: true,
-        });
-      testApartment = createResponse.body;
-    }
+    // Create a fresh apartment for this test
+    const createResponse = await request(app)
+      .post('/api/apartments')
+      .set('Authorization', `Bearer ${testToken}`)
+      .send({
+        title: 'Test Apartment for Neighborhood',
+        description: 'A test apartment for neighborhood rating',
+        price: 1000,
+        location: {
+          type: 'Point',
+          coordinates: [12.34, 56.78],
+          address: {
+            country: 'Testland',
+            state: 'Test State',
+            city: 'Test City',
+            street: '123 Test St',
+            zipCode: '12345'
+          }
+        },
+        bedrooms: 2,
+        bathrooms: 1,
+        area: 100,
+        status: 'available',
+        isPublic: true,
+        owner: testUser._id,
+        amenities: ['Parking', 'Gym'],
+      });
+    expect(createResponse.status).toBe(201);
+    const testApartment = createResponse.body;
 
-    // Update apartment with neighborhood rating
     const updateResponse = await request(app)
       .put(`/api/apartments/${testApartment._id}`)
       .set('Authorization', `Bearer ${testToken}`)
