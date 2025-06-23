@@ -1,0 +1,78 @@
+config:
+  target: 'http://localhost:3000'
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: "Warm up phase"
+    - duration: 120
+      arrivalRate: 10
+      name: "Normal load"
+    - duration: 60
+      arrivalRate: 20
+      name: "Peak load"
+    - duration: 60
+      arrivalRate: 5
+      name: "Cool down"
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+  processor: './scripts/load-test-processor.js'
+
+scenarios:
+  - name: "Public apartment listings"
+    weight: 40
+    flow:
+      - get:
+          url: "/api/apartments/public"
+          expect:
+            - statusCode: 200
+            - hasHeader: "X-Response-Time"
+            - hasHeader: "X-Cache-Hit-Rate"
+
+  - name: "Authenticated apartment search"
+    weight: 30
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "test@example.com"
+            password: "password123"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/apartments?minPrice=1000&maxPrice=3000"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+            - hasHeader: "X-Response-Time"
+
+  - name: "Performance metrics"
+    weight: 10
+    flow:
+      - get:
+          url: "/api/performance"
+          expect:
+            - statusCode: 200
+            - hasProperty: "cache"
+            - hasProperty: "memory"
+
+  - name: "Cache operations"
+    weight: 10
+    flow:
+      - get:
+          url: "/api/cache/stats"
+          expect:
+            - statusCode: 200
+            - hasProperty: "hitRate"
+
+  - name: "API documentation"
+    weight: 10
+    flow:
+      - get:
+          url: "/api-docs"
+          expect:
+            - statusCode: 200 
