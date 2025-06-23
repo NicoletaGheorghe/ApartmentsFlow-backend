@@ -196,7 +196,13 @@ const apartmentWriteLimiter = rateLimit({
 
 // AI-OPTIMIZED: Apply rate limiting to routes
 app.use('/api/auth/', authLimiter);
-app.use('/api/apartments', apartmentWriteLimiter);
+// Apply apartment write limiter only to write operations, not GET requests
+app.use('/api/apartments', (req, res, next) => {
+  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
+    return apartmentWriteLimiter(req, res, next);
+  }
+  next();
+});
 app.use('/api/', apiLimiter);
 
 /**

@@ -21,14 +21,15 @@ export default function ListingsPage() {
           window.location.href = "auth/unauthorized";
           return;
         }
-        const response = await apiClient.getApartments({ page, limit });
+        const response = await apiClient.getApartments(page, limit);
         console.log("API response:", response.data);
         if (Array.isArray(response.data.apartments)) {
-        setFlats(response.data.apartments);
-      } else {
-        setFlats([]);
-      }
-      setPages(response.data.pages);
+          console.log('Apartments data received from API:', response.data.apartments);
+          setFlats(response.data.apartments);
+        } else {
+          setFlats([]);
+        }
+        setPages(response.data.pages);
       } catch (err) {
         setError(
           err.response?.data?.message ||
@@ -87,27 +88,12 @@ if (loading) {
         ) : (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 max-w-5xl mx-auto px-2">
         {filteredFlats.map((flat, index) => {
-          const { location = {} } = flat;
-          const { coordinates = [], address = {} } = location;
-          //const [longitude, latitude] = coordinates;
+          console.log(`Data passed to ListingCard for "${flat.title}":`, { images: flat.images });
 
           return (
             <ListingCard
               key={index}
-              title={flat.title}
-              description={flat.description}
-              price={`£${flat.price}/mo`}
-              street={address.street}
-              city={address.city}
-              state={address.state}
-              zipCode={address.zipCode}
-              country={address.country}
-              bedrooms={flat.bedrooms}
-              bathrooms={flat.bathrooms}
-              area={flat.area}
-              amenities={(flat.amenities || []).join(", ")}
-              images={flat.images}
-              status={flat.status}
+              apartment={flat}
             />
           );
       })}

@@ -21,7 +21,7 @@ export default function ApartmentAdd() {
         bathrooms: "",
         area: "",
         amenities: "",
-        images: null,
+        images: [],
         status: "",
         });
         const [errors, setErrors] = useState({});
@@ -131,26 +131,32 @@ export default function ApartmentAdd() {
                     return;
                 }
 
+                // Construct the location object as expected by the backend
+                const locationObject = {
+                    coordinates: [parseFloat(formData.longitude), parseFloat(formData.latitude)],
+                    address: {
+                        street: formData.street,
+                        city: formData.city,
+                        state: formData.state,
+                        zipCode: formData.zipCode,
+                        country: formData.country
+                    }
+                };
+
+                // Create FormData for file upload
                 const submissionData = new FormData();
                 submissionData.append("title", formData.title);
                 submissionData.append("description", formData.description);
-                submissionData.append("price", Number(formData.price));
-                submissionData.append("bedrooms", Number(formData.bedrooms));
-                submissionData.append("bathrooms", Number(formData.bathrooms));
-                submissionData.append("area", Number(formData.area));
+                submissionData.append("price", formData.price);
+                submissionData.append("bedrooms", formData.bedrooms);
+                submissionData.append("bathrooms", formData.bathrooms);
+                submissionData.append("area", formData.area);
                 submissionData.append("amenities", formData.amenities);
                 submissionData.append("status", formData.status);
-                submissionData.append("location[type]", "Point");
-                submissionData.append("location[coordinates][0]", Number(formData.longitude));
-                submissionData.append("location[coordinates][1]", Number(formData.latitude));
-                submissionData.append("location[address][street]", formData.street);
-                submissionData.append("location[address][city]", formData.city);
-                submissionData.append("location[address][state]", formData.state);
-                submissionData.append("location[address][zipCode]", formData.zipCode);
-                submissionData.append("location[address][country]", formData.country);
+                submissionData.append("location", JSON.stringify(locationObject));
 
-                if (formData.images) {
-                    submissionData.append("images", formData.images);
+                if (formData.images && formData.images.length > 0) {
+                    formData.images.forEach((img) => submissionData.append("images", img));
                 }
 
                 // Debug: Log what's being sent
@@ -172,6 +178,12 @@ export default function ApartmentAdd() {
                     longitude: formData.longitude
                 });
 
+                // Debug: Log the actual FormData entries
+                console.log("FormData entries:");
+                for (let [key, value] of submissionData.entries()) {
+                    console.log(`${key}:`, value);
+                }
+
                 await apiClient.createApartment(submissionData);
 
                  setSuccess(true);
@@ -190,7 +202,7 @@ export default function ApartmentAdd() {
                     bathrooms: "",
                     area: "",
                     amenities: "",
-                    images: null,
+                    images: [],
                     status: "",
                  });
                  setAutocompleteValue("");
@@ -200,9 +212,19 @@ export default function ApartmentAdd() {
                 console.log("Full error object:", error);
                 console.log("Error response data:", error.response?.data);
                 console.log("Error response status:", error.response?.status);
+                
+                // Log the specific validation errors
+                if (error.response?.data?.details) {
+                    console.log("Validation errors:", error.response.data.details);
+                }
+                if (error.response?.data?.errors) {
+                    console.log("Validation errors:", error.response.data.errors);
+                }
+                
                 setErrors({
                     submit:
-                        (error.response?.data?.details && error.response.data.details.join(', ')) ||
+                        (error.response?.data?.details && Array.isArray(error.response.data.details) && error.response.data.details.join(', ')) ||
+                        (error.response?.data?.errors && Array.isArray(error.response.data.errors) && error.response.data.errors.join(', ')) ||
                         error.response?.data?.message ||
                         error.response?.data?.error ||
                         "Failed to list an apartment. Please try again.",
@@ -214,7 +236,9 @@ export default function ApartmentAdd() {
             const handleChange = (e) => {
                 const { name, value, files } = e.target;
                 if (name === "images") {
-                    setFormData((prev) => ({ ...prev, images: files[0] }));
+                    // Accept up to 8 images
+                    const selectedFiles = Array.from(files).slice(0, 8);
+                    setFormData((prev) => ({ ...prev, images: selectedFiles }));
                 } else {
                     setFormData((prev) => ({ ...prev, [name]: value }));
                 }
@@ -410,13 +434,18 @@ export default function ApartmentAdd() {
                     <p className="mt-1 text-sm text-red-500">{errors.amenities}</p>
                 )}
             </div>
-            <div>
-                <Input
-                label="Images"
+            <div className="mb-4">
+              <label htmlFor="images" className="block text-sm font-medium text-gray-700">Images (up to 8)</label>
+              <input
                 type="file"
+                id="images"
                 name="images"
+                multiple
+                accept="image/*"
                 onChange={handleChange}
-                />
+                className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+              {errors.images && <p className="text-red-500 text-xs mt-1">{errors.images}</p>}
             </div>
             <div>
                 <Input

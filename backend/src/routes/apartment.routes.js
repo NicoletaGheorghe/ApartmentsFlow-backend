@@ -54,11 +54,11 @@ const validateApartmentInput = (req, res, next) => {
     errors.push('Location must be at least 3 characters long');
   }
 
-  if (!bedrooms || isNaN(bedrooms) || bedrooms < 0) {
+  if (bedrooms === undefined || bedrooms === null || isNaN(bedrooms) || bedrooms < 0) {
     errors.push('Bedrooms must be a non-negative number');
   }
 
-  if (!bathrooms || isNaN(bathrooms) || bathrooms < 0) {
+  if (bathrooms === undefined || bathrooms === null || isNaN(bathrooms) || bathrooms < 0) {
     errors.push('Bathrooms must be a non-negative number');
   }
 
@@ -115,7 +115,7 @@ router.get('/public', validateApartmentQuery, getApartments); // Public listings
 // Protected routes - require authentication
 router.get('/', protect, validateApartmentQuery, getApartments); // All listings based on role
 router.get('/:id', protect, getApartment);
-router.post('/', protect, upload.array('images', 4), validateApartmentInput, createApartment);
+router.post('/', protect, upload.array('images', 8), validateApartmentInput, createApartment);
 router.post('/json', protect, validateApartmentInput, createApartment); // JSON data without file uploads
 router.put('/:id', protect, validateApartmentUpdate, updateApartment);
 router.delete('/:id', protect, deleteApartment);
@@ -126,7 +126,7 @@ router.post(
   '/upload-images',
   protect,
   authorize('admin', 'agent'),
-  upload.array('images', 4),
+  upload.array('images', 8),
   contentModeration,
   uploadImages
 );

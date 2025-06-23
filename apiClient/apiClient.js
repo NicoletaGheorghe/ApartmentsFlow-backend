@@ -159,10 +159,10 @@ export class ApiClient {
     }
 
        async getApartments(page = 1, limit = 6, filters = {}) {
-            const params = new URLSearchParams({ page, limit, ...filters });
+            const params = { page, limit, ...filters };
             try {
                 const queryString = new URLSearchParams(params).toString();
-                const endpoint = API_BASE_URL + "/apartments" + (queryString ? `?${queryString}` : "") ;
+                const endpoint = "/apartments" + (queryString ? `?${queryString}` : "");
                 const response = await this.apiCall("get", endpoint);
                 return response;
             } catch (error) {
