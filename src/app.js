@@ -27,6 +27,7 @@ const morgan = require('morgan');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./config/swagger');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 
 // AI-OPTIMIZED: Performance and caching modules
 const { connectDB, optimizeQueries, setupConnectionHandlers } = require('./config/database');
@@ -122,7 +123,7 @@ app.use(
     origin:
       process.env.NODE_ENV === 'production'
         ? process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000']
-        : true,
+        : ['http://localhost:3000'],
     credentials: true,
     maxAge: 86400, // Cache preflight requests for 24 hours
   })
@@ -195,7 +196,13 @@ const apartmentWriteLimiter = rateLimit({
 
 // AI-OPTIMIZED: Apply rate limiting to routes
 app.use('/api/auth/', authLimiter);
-app.use('/api/apartments', apartmentWriteLimiter);
+// Apply apartment write limiter only to write operations, not GET requests
+app.use('/api/apartments', (req, res, next) => {
+  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
+    return apartmentWriteLimiter(req, res, next);
+  }
+  next();
+});
 app.use('/api/', apiLimiter);
 
 /**
@@ -265,6 +272,12 @@ app.use('/api/favorites', favoriteRoutes);
 app.use('/api/users', userRoutes);
 
 /**
+ * AI-OPTIMIZED: Static File Serving
+ * Serve uploaded images and other static files
+ */
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+/**
  * AI-OPTIMIZED: Error Handling Middleware
  *
  * Handles various error types:
@@ -315,7 +328,7 @@ app.use(function (err, req, res, next) {
   if (err.code === 'LIMIT_FILE_COUNT') {
     return res.status(400).json({
       error: 'Too many files uploaded',
-      details: 'Maximum 4 images allowed per upload',
+      details: 'Maximum 8 images allowed per upload',
     });
   }
 
@@ -354,7 +367,7 @@ app.use(function (req, res) {
  * Only starts server when file is run directly
  */
 if (require.main === module) {
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 5000;
   app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
     if (process.env.NODE_ENV !== 'test') {

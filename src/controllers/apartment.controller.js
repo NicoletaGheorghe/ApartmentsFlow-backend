@@ -137,6 +137,20 @@ const createApartment = async (req, res, next) => {
     if (req.body.bathrooms !== undefined) req.body.bathrooms = Number(req.body.bathrooms);
     if (req.body.area !== undefined) req.body.area = Number(req.body.area);
 
+    // Convert amenities from comma-separated string to array if needed
+    if (req.body.amenities && typeof req.body.amenities === 'string') {
+      req.body.amenities = req.body.amenities.split(',').map(item => item.trim()).filter(item => item.length > 0);
+    }
+
+    // Parse location JSON string if it's a string
+    if (req.body.location && typeof req.body.location === 'string') {
+      try {
+        req.body.location = JSON.parse(req.body.location);
+      } catch (error) {
+        return res.status(400).json({ error: 'Invalid location format' });
+      }
+    }
+
     const apartmentData = {
       ...req.body,
       owner: req.user._id,
@@ -146,7 +160,11 @@ const createApartment = async (req, res, next) => {
 
     // If files were uploaded, add their paths to the apartment data
     if (req.files && req.files.length > 0) {
-      apartmentData.images = req.files.map((file) => file.path);
+      apartmentData.images = req.files.map((file, index) => ({
+        url: `uploads/${file.filename}`,
+        publicId: file.filename, // Using filename as publicId for now
+        isMain: index === 0 // First image is main image
+      }));
     }
 
     // If this is an external listing, ensure we have the source information
@@ -393,9 +411,9 @@ const uploadImages = async (req, res) => {
       return res.status(400).json({ error: 'No images uploaded' });
     }
 
-    // Limit to 4 images per upload
-    if (req.files.length > 4) {
-      return res.status(400).json({ error: 'Maximum 4 images allowed per upload' });
+    // Limit to 8 images per upload
+    if (req.files.length > 8) {
+      return res.status(400).json({ error: 'Maximum 8 images allowed per upload' });
     }
 
     const cloudinary = require('../config/cloudinary');

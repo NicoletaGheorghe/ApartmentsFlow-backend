@@ -13,9 +13,11 @@ const {
   getApartmentNotes,
   addApartmentNote,
   updateApartmentNote,
-  deleteApartmentNote
+  deleteApartmentNote,
 } = require('../controllers/user.controller');
-
+router.post('/favorites/:id', (req, res) => {
+  res.json({ message: `Hit favorites route with id ${req.params.id}` });
+});
 // Profile routes
 router.get('/profile', protect, getProfile);
 router.put('/profile', protect, updateProfile);
