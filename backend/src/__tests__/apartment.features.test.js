@@ -106,8 +106,8 @@ describe('Apartment Features', () => {
             state: 'Test State',
             city: 'Test City',
             street: '123 Test St',
-            zipCode: '12345'
-          }
+            zipCode: '12345',
+          },
         },
         bedrooms: 2,
         bathrooms: 1,
@@ -174,8 +174,8 @@ describe('Apartment Features', () => {
             state: 'Test State',
             city: 'Test City',
             street: '123 Test St',
-            zipCode: '12345'
-          }
+            zipCode: '12345',
+          },
         },
         bedrooms: 2,
         bathrooms: 1,
@@ -220,8 +220,8 @@ describe('Apartment Features', () => {
             state: 'Test State',
             city: 'Test City',
             street: '789 External Ave',
-            zipCode: '67890'
-          }
+            zipCode: '67890',
+          },
         },
         bedrooms: 3,
         bathrooms: 2,
@@ -259,8 +259,8 @@ describe('Apartment Features', () => {
             state: 'Test State',
             city: 'Test City',
             street: '123 Test St',
-            zipCode: '12345'
-          }
+            zipCode: '12345',
+          },
         },
         bedrooms: 2,
         bathrooms: 1,
@@ -307,8 +307,8 @@ describe('Apartment Features', () => {
             state: 'Test State',
             city: 'Test City',
             street: '123 Test St',
-            zipCode: '12345'
-          }
+            zipCode: '12345',
+          },
         },
         bedrooms: 2,
         bathrooms: 1,

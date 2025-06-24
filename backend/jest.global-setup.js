@@ -18,7 +18,7 @@ module.exports = async () => {
   process.env.MONGODB_URI = uri;
   // Set up JWT secret for tests
   process.env.JWT_SECRET = 'test-secret-key';
-  
+
   // Ensure Cloudinary URL is loaded from .env
   if (!process.env.CLOUDINARY_URL) {
     console.error('CLOUDINARY_URL not found in .env file');

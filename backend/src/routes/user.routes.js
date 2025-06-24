@@ -13,7 +13,7 @@ const {
   getApartmentNotes,
   addApartmentNote,
   updateApartmentNote,
-  deleteApartmentNote
+  deleteApartmentNote,
 } = require('../controllers/user.controller');
 
 // Profile routes
@@ -37,4 +37,4 @@ router.post('/apartments/:id/notes', protect, addApartmentNote);
 router.put('/apartments/:id/notes/:noteId', protect, updateApartmentNote);
 router.delete('/apartments/:id/notes/:noteId', protect, deleteApartmentNote);
 
-module.exports = router; 
+module.exports = router;

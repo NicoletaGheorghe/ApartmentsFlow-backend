@@ -145,7 +145,7 @@ const validateNote = (req, res, next) => {
     if (tags.length > 10) {
       errors.push('Maximum 10 tags allowed');
     }
-    tags.forEach(tag => {
+    tags.forEach((tag) => {
       if (tag.length > 20) {
         errors.push('Tag cannot exceed 20 characters');
       }

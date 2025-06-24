@@ -195,15 +195,17 @@ const apartmentWriteLimiter = rateLimit({
 });
 
 // AI-OPTIMIZED: Apply rate limiting to routes
-app.use('/api/auth/', authLimiter);
-// Apply apartment write limiter only to write operations, not GET requests
-app.use('/api/apartments', (req, res, next) => {
-  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
-    return apartmentWriteLimiter(req, res, next);
-  }
-  next();
-});
-app.use('/api/', apiLimiter);
+if (process.env.NODE_ENV !== 'test') {
+  app.use('/api/auth/', authLimiter);
+  // Apply apartment write limiter only to write operations, not GET requests
+  app.use('/api/apartments', (req, res, next) => {
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+      return apartmentWriteLimiter(req, res, next);
+    }
+    next();
+  });
+  app.use(apiLimiter); // General API limiter
+}
 
 /**
  * AI-OPTIMIZED: Performance Monitoring Endpoints

@@ -50,4 +50,4 @@ router.put('/:id', validateNote, updateNote);
 // @access  Private
 router.delete('/:id', deleteNote);
 
-module.exports = router; 
+module.exports = router;

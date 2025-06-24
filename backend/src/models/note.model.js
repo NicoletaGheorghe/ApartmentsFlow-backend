@@ -79,4 +79,4 @@ noteSchema.index({ isPublic: 1 });
 
 const Note = mongoose.model('Note', noteSchema);
 
-module.exports = Note; 
+module.exports = Note;

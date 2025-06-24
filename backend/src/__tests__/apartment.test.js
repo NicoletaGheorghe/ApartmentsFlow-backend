@@ -45,8 +45,8 @@ const createTestApartment = (isPublic = true, ownerId = null) => ({
           state: 'Test State',
           city: 'Test City',
           street: '123 Main St',
-          zipCode: '12345'
-        }
+          zipCode: '12345',
+        },
       }
     : {
         type: 'Point',
@@ -56,8 +56,8 @@ const createTestApartment = (isPublic = true, ownerId = null) => ({
           state: 'Test State',
           city: 'Test City',
           street: '456 Main St',
-          zipCode: '54321'
-        }
+          zipCode: '54321',
+        },
       },
   bedrooms: isPublic ? 2 : 3,
   bathrooms: isPublic ? 1 : 2,
@@ -225,8 +225,12 @@ describe('Apartment Access Control', () => {
 
     expect(agentResponse.status).toBe(200);
     expect(agentResponse.body.apartments).toHaveLength(2);
-    expect(agentResponse.body.apartments.some(apt => apt.isPublic)).toBe(true);
-    expect(agentResponse.body.apartments.some(apt => !apt.isPublic && apt.owner._id === agentUser._id.toString())).toBe(true);
+    expect(agentResponse.body.apartments.some((apt) => apt.isPublic)).toBe(true);
+    expect(
+      agentResponse.body.apartments.some(
+        (apt) => !apt.isPublic && apt.owner._id === agentUser._id.toString()
+      )
+    ).toBe(true);
   });
 
   test('should only allow admins to change isPublic status', async () => {

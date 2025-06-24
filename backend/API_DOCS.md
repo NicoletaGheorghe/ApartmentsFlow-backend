@@ -3,10 +3,13 @@
 ## Authentication
 
 ### Register User
+
 ```http
 POST /api/auth/register
 ```
+
 **Request Body:**
+
 ```json
 {
   "name": "string",
@@ -14,7 +17,9 @@ POST /api/auth/register
   "password": "string"
 }
 ```
+
 **Response:**
+
 ```json
 {
   "success": true,
@@ -29,17 +34,22 @@ POST /api/auth/register
 ```
 
 ### Login User
+
 ```http
 POST /api/auth/login
 ```
+
 **Request Body:**
+
 ```json
 {
   "email": "string",
   "password": "string"
 }
 ```
+
 **Response:**
+
 ```json
 {
   "success": true,
@@ -56,10 +66,13 @@ POST /api/auth/login
 ## Apartments
 
 ### Get All Apartments
+
 ```http
 GET /api/apartments
 ```
+
 **Query Parameters:**
+
 - `page`: number (default: 1)
 - `limit`: number (default: 10)
 - `sort`: string (default: "-createdAt")
@@ -70,6 +83,7 @@ GET /api/apartments
 - `bathrooms`: number
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -112,10 +126,13 @@ GET /api/apartments
 ```
 
 ### Get Single Apartment
+
 ```http
 GET /api/apartments/:id
 ```
+
 **Response:**
+
 ```json
 {
   "success": true,
@@ -150,10 +167,13 @@ GET /api/apartments/:id
 ```
 
 ### Create Apartment
+
 ```http
 POST /api/apartments
 ```
+
 **Request Body:**
+
 ```json
 {
   "title": "string",
@@ -177,12 +197,15 @@ POST /api/apartments
 ```
 
 ### Update Apartment
+
 ```http
 PUT /api/apartments/:id
 ```
+
 **Request Body:** Same as Create Apartment
 
 ### Delete Apartment
+
 ```http
 DELETE /api/apartments/:id
 ```
@@ -190,10 +213,13 @@ DELETE /api/apartments/:id
 ## Favorites
 
 ### Get User Favorites
+
 ```http
 GET /api/favorites
 ```
+
 **Response:**
+
 ```json
 {
   "success": true,
@@ -220,10 +246,13 @@ GET /api/favorites
 ```
 
 ### Add to Favorites
+
 ```http
 POST /api/favorites
 ```
+
 **Request Body:**
+
 ```json
 {
   "apartmentId": "string",
@@ -232,6 +261,7 @@ POST /api/favorites
 ```
 
 ### Remove from Favorites
+
 ```http
 DELETE /api/favorites/:id
 ```
@@ -239,10 +269,13 @@ DELETE /api/favorites/:id
 ## Commute
 
 ### Get Commute Time
+
 ```http
 POST /api/commute
 ```
+
 **Request Body:**
+
 ```json
 {
   "apartmentId": "string",
@@ -250,7 +283,9 @@ POST /api/commute
   "mode": "string"
 }
 ```
+
 **Response:**
+
 ```json
 {
   "success": true,
@@ -266,6 +301,7 @@ POST /api/commute
 ## Error Responses
 
 ### 400 Bad Request
+
 ```json
 {
   "error": "string",
@@ -274,6 +310,7 @@ POST /api/commute
 ```
 
 ### 401 Unauthorized
+
 ```json
 {
   "error": "Not authorized to access this route"
@@ -281,6 +318,7 @@ POST /api/commute
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "error": "Resource not found"
@@ -288,9 +326,10 @@ POST /api/commute
 ```
 
 ### 500 Server Error
+
 ```json
 {
   "error": "Server error",
   "details": "string"
 }
-``` 
+```

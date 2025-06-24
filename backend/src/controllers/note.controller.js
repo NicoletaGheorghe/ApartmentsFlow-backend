@@ -18,7 +18,11 @@ const createNote = asyncHandler(async (req, res) => {
   }
 
   // Check if user has access to this apartment (public or their own)
-  if (!apartment.isPublic && apartment.user.toString() !== req.user.id && req.user.role !== 'admin') {
+  if (
+    !apartment.isPublic &&
+    apartment.user.toString() !== req.user.id &&
+    req.user.role !== 'admin'
+  ) {
     return res.status(403).json({
       success: false,
       message: 'Access denied to this apartment',
@@ -145,7 +149,7 @@ const updateNote = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check ownership
+  // Check ownership BEFORE any validation
   if (note.user.toString() !== req.user.id && req.user.role !== 'admin') {
     return res.status(403).json({
       success: false,
@@ -153,6 +157,7 @@ const updateNote = asyncHandler(async (req, res) => {
     });
   }
 
+  // Now validate and update
   note = await Note.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,
@@ -212,10 +217,7 @@ const getApartmentNotes = asyncHandler(async (req, res) => {
   // Build query: user's own notes OR public notes
   const query = {
     apartment: apartmentId,
-    $or: [
-      { user: req.user.id },
-      { isPublic: true },
-    ],
+    $or: [{ user: req.user.id }, { isPublic: true }],
   };
 
   const skip = (page - 1) * limit;
@@ -269,7 +271,7 @@ const getNoteStats = asyncHandler(async (req, res) => {
   // Process category stats
   const categoryStats = {};
   if (stats.length > 0 && stats[0].byCategory) {
-    stats[0].byCategory.forEach(item => {
+    stats[0].byCategory.forEach((item) => {
       categoryStats[item.category] = (categoryStats[item.category] || 0) + item.count;
     });
   }
@@ -277,7 +279,7 @@ const getNoteStats = asyncHandler(async (req, res) => {
   // Process priority stats
   const priorityStats = {};
   if (stats.length > 0 && stats[0].byPriority) {
-    stats[0].byPriority.forEach(item => {
+    stats[0].byPriority.forEach((item) => {
       priorityStats[item.priority] = (priorityStats[item.priority] || 0) + item.count;
     });
   }
@@ -300,4 +302,4 @@ module.exports = {
   deleteNote,
   getApartmentNotes,
   getNoteStats,
-}; 
+};

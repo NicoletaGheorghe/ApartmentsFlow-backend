@@ -3,76 +3,76 @@ config:
   phases:
     - duration: 60
       arrivalRate: 5
-      name: "Warm up phase"
+      name: 'Warm up phase'
     - duration: 120
       arrivalRate: 10
-      name: "Normal load"
+      name: 'Normal load'
     - duration: 60
       arrivalRate: 20
-      name: "Peak load"
+      name: 'Peak load'
     - duration: 60
       arrivalRate: 5
-      name: "Cool down"
+      name: 'Cool down'
   defaults:
     headers:
       Content-Type: 'application/json'
   processor: './scripts/load-test-processor.js'
 
 scenarios:
-  - name: "Public apartment listings"
+  - name: 'Public apartment listings'
     weight: 40
     flow:
       - get:
-          url: "/api/apartments/public"
+          url: '/api/apartments/public'
           expect:
             - statusCode: 200
-            - hasHeader: "X-Response-Time"
-            - hasHeader: "X-Cache-Hit-Rate"
+            - hasHeader: 'X-Response-Time'
+            - hasHeader: 'X-Cache-Hit-Rate'
 
-  - name: "Authenticated apartment search"
+  - name: 'Authenticated apartment search'
     weight: 30
     flow:
       - post:
-          url: "/api/auth/login"
+          url: '/api/auth/login'
           json:
-            email: "test@example.com"
-            password: "password123"
+            email: 'test@example.com'
+            password: 'password123'
           capture:
-            - json: "$.token"
-              as: "authToken"
+            - json: '$.token'
+              as: 'authToken'
           expect:
             - statusCode: 200
       - get:
-          url: "/api/apartments?minPrice=1000&maxPrice=3000"
+          url: '/api/apartments?minPrice=1000&maxPrice=3000'
           headers:
-            Authorization: "Bearer {{ authToken }}"
+            Authorization: 'Bearer {{ authToken }}'
           expect:
             - statusCode: 200
-            - hasHeader: "X-Response-Time"
+            - hasHeader: 'X-Response-Time'
 
-  - name: "Performance metrics"
+  - name: 'Performance metrics'
     weight: 10
     flow:
       - get:
-          url: "/api/performance"
+          url: '/api/performance'
           expect:
             - statusCode: 200
-            - hasProperty: "cache"
-            - hasProperty: "memory"
+            - hasProperty: 'cache'
+            - hasProperty: 'memory'
 
-  - name: "Cache operations"
+  - name: 'Cache operations'
     weight: 10
     flow:
       - get:
-          url: "/api/cache/stats"
+          url: '/api/cache/stats'
           expect:
             - statusCode: 200
-            - hasProperty: "hitRate"
+            - hasProperty: 'hitRate'
 
-  - name: "API documentation"
+  - name: 'API documentation'
     weight: 10
     flow:
       - get:
-          url: "/api-docs"
+          url: '/api-docs'
           expect:
-            - statusCode: 200 
+            - statusCode: 200

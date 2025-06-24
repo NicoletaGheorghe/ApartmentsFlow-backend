@@ -63,8 +63,8 @@ describe('App', () => {
             state: 'Test State',
             city: 'Testville',
             street: '123 Main St',
-            zipCode: '12345'
-          }
+            zipCode: '12345',
+          },
         },
         bedrooms: 2,
         bathrooms: 1,

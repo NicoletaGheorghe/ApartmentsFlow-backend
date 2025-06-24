@@ -5,30 +5,45 @@ const { Apartment, Note } = require('../models');
 require('./setup');
 
 // Helper function to register and login a user via the API
-const registerAndLoginUser = async (email = 'testuser@example.com') => {
-  // Register
-  await request(app)
-    .post('/api/auth/register')
-    .send({
+const registerAndLoginUser = async (email) => {
+  // Use a unique email if not provided
+  if (!email) {
+    email = `testuser+${Date.now()}+${Math.floor(Math.random()*10000)}@example.com`;
+  }
+  try {
+    // Register
+    const registerResponse = await request(app).post('/api/auth/register').send({
       name: 'Test User',
       email,
       password: 'password123',
     });
-  // Login
-  const loginResponse = await request(app)
-    .post('/api/auth/login')
-    .send({
+    
+    if (registerResponse.status !== 201) {
+      throw new Error(`Registration failed: ${registerResponse.status} - ${JSON.stringify(registerResponse.body)}`);
+    }
+    
+    // Login
+    const loginResponse = await request(app).post('/api/auth/login').send({
       email,
       password: 'password123',
     });
-  return {
-    userId: loginResponse.body._id,
-    token: loginResponse.body.token,
-  };
+    
+    if (loginResponse.status !== 200) {
+      throw new Error(`Login failed: ${loginResponse.status} - ${JSON.stringify(loginResponse.body)}`);
+    }
+    
+    return {
+      userId: loginResponse.body.user._id,
+      token: loginResponse.body.token,
+    };
+  } catch (error) {
+    throw new Error(`User setup failed: ${error.message}`);
+  }
 };
 
+// Helper function to create a test apartment
 const createTestApartment = async (userId) => {
-  return await Apartment.create({
+  const apartment = await Apartment.create({
     title: 'Test Apartment',
     description: 'A test apartment',
     price: 1000,
@@ -49,6 +64,7 @@ const createTestApartment = async (userId) => {
     owner: userId,
     isPublic: true,
   });
+  return apartment;
 };
 
 describe('Notes API', () => {
@@ -56,11 +72,20 @@ describe('Notes API', () => {
 
   beforeEach(async () => {
     // Register and login test user
-    const { userId, token } = await registerAndLoginUser();
-    testUser = { _id: userId };
-    authToken = token;
-    // Create test apartment for this user
-    testApartment = await createTestApartment(userId);
+    try {
+      const { userId, token } = await registerAndLoginUser();
+      
+      if (!userId) {
+        throw new Error('User registration failed - userId is undefined');
+      }
+      
+      testUser = { _id: userId };
+      authToken = token;
+      // Create test apartment for this user
+      testApartment = await createTestApartment(userId);
+    } catch (error) {
+      throw new Error(`Error in beforeEach setup: ${error.message}`);
+    }
   });
 
   describe('POST /api/notes', () => {
@@ -87,7 +112,9 @@ describe('Notes API', () => {
       expect(response.body.data.priority).toBe(noteData.priority);
       expect(response.body.data.tags).toEqual(noteData.tags);
       expect(response.body.data.user).toBe(testUser._id.toString());
-      expect(response.body.data.apartment._id || response.body.data.apartment).toBe(testApartment._id.toString());
+      expect(response.body.data.apartment._id || response.body.data.apartment).toBe(
+        testApartment._id.toString()
+      );
     });
 
     it('should validate required fields', async () => {
@@ -127,7 +154,9 @@ describe('Notes API', () => {
   describe('GET /api/notes', () => {
     beforeEach(async () => {
       // Create test notes with a fresh apartment for this test
+      // Create a fresh apartment for this test
       const apartment = await createTestApartment(testUser._id);
+      // Create notes with apartment
       await Note.create([
         {
           user: testUser._id,
@@ -136,6 +165,8 @@ describe('Notes API', () => {
           content: 'Content 1',
           category: 'pros',
           priority: 'high',
+          isPublic: true,
+          tags: [],
         },
         {
           user: testUser._id,
@@ -144,6 +175,8 @@ describe('Notes API', () => {
           content: 'Content 2',
           category: 'cons',
           priority: 'medium',
+          isPublic: true,
+          tags: [],
         },
       ]);
     });
@@ -180,13 +213,25 @@ describe('Notes API', () => {
     });
 
     it('should search notes', async () => {
+      // Create a note with a unique title for this specific test
+      const uniqueNote = await Note.create({
+        user: testUser._id,
+        apartment: testApartment._id,
+        title: 'Unique Search Test Note',
+        content: 'This is a unique note for search testing',
+        category: 'general',
+        priority: 'medium',
+        isPublic: false,
+        tags: [],
+      });
+
       const response = await request(app)
-        .get('/api/notes?search=Note 1')
+        .get('/api/notes?search=Unique Search Test')
         .set('Authorization', `Bearer ${authToken}`);
 
       expect(response.status).toBe(200);
       expect(response.body.data).toHaveLength(1);
-      expect(response.body.data[0].title).toBe('Note 1');
+      expect(response.body.data[0].title).toBe('Unique Search Test Note');
     });
   });
 
@@ -201,6 +246,10 @@ describe('Notes API', () => {
         apartment: apartment._id,
         title: 'Test Note',
         content: 'Test content',
+        category: 'general',
+        priority: 'medium',
+        isPublic: false,
+        tags: [],
       });
     });
 
@@ -235,6 +284,10 @@ describe('Notes API', () => {
         apartment: apartment._id,
         title: 'Original Title',
         content: 'Original content',
+        category: 'general',
+        priority: 'medium',
+        isPublic: false,
+        tags: [],
       });
     });
 
@@ -244,6 +297,7 @@ describe('Notes API', () => {
         content: 'Updated content',
         category: 'cons',
         priority: 'low',
+        apartmentId: testNote.apartment,
       };
 
       const response = await request(app)
@@ -259,7 +313,7 @@ describe('Notes API', () => {
       expect(response.body.data.priority).toBe(updateData.priority);
     });
 
-    it('should not allow updating another user\'s note', async () => {
+    it("should not allow updating another user's note", async () => {
       const otherUser = await registerAndLoginUser('other@example.com');
       const otherApartment = await createTestApartment(otherUser.userId);
       const otherNote = await Note.create({
@@ -267,12 +321,24 @@ describe('Notes API', () => {
         apartment: otherApartment._id,
         title: 'Other Note',
         content: 'Other content',
+        category: 'general',
+        priority: 'medium',
+        isPublic: false,
+        tags: [],
       });
+
+      const validUpdate = {
+        title: 'Hacked',
+        content: 'Hacked content',
+        category: 'general',
+        priority: 'medium',
+        apartmentId: otherApartment._id,
+      };
 
       const response = await request(app)
         .put(`/api/notes/${otherNote._id}`)
         .set('Authorization', `Bearer ${authToken}`)
-        .send({ title: 'Hacked' });
+        .send(validUpdate);
 
       expect(response.status).toBe(403);
     });
@@ -289,6 +355,10 @@ describe('Notes API', () => {
         apartment: apartment._id,
         title: 'To Delete',
         content: 'Will be deleted',
+        category: 'general',
+        priority: 'medium',
+        isPublic: false,
+        tags: [],
       });
     });
 
@@ -306,7 +376,7 @@ describe('Notes API', () => {
       expect(deletedNote).toBeNull();
     });
 
-    it('should not allow deleting another user\'s note', async () => {
+    it("should not allow deleting another user's note", async () => {
       const otherUser = await registerAndLoginUser('other@example.com');
       const otherApartment = await createTestApartment(otherUser.userId);
       const otherNote = await Note.create({
@@ -314,6 +384,10 @@ describe('Notes API', () => {
         apartment: otherApartment._id,
         title: 'Other Note',
         content: 'Other content',
+        category: 'general',
+        priority: 'medium',
+        isPublic: false,
+        tags: [],
       });
 
       const response = await request(app)
@@ -330,10 +404,10 @@ describe('Notes API', () => {
     beforeEach(async () => {
       // Create a fresh apartment for the test user
       testApartmentForNotes = await createTestApartment(testUser._id);
-      
+
       otherUser = await registerAndLoginUser('other@example.com');
       const otherApartment = await createTestApartment(otherUser.userId);
-      
+
       // Create public note by other user
       otherNote = await Note.create({
         user: otherUser.userId,
@@ -341,6 +415,9 @@ describe('Notes API', () => {
         title: 'Public Note',
         content: 'This is public',
         isPublic: true,
+        category: 'general',
+        priority: 'medium',
+        tags: [],
       });
 
       // Create private note by test user
@@ -350,10 +427,13 @@ describe('Notes API', () => {
         title: 'Private Note',
         content: 'This is private',
         isPublic: false,
+        category: 'general',
+        priority: 'medium',
+        tags: [],
       });
     });
 
-    it('should get notes for apartment (user\'s own + public)', async () => {
+    it("should get notes for apartment (user's own + public)", async () => {
       const response = await request(app)
         .get(`/api/notes/apartment/${testApartmentForNotes._id}`)
         .set('Authorization', `Bearer ${authToken}`);
@@ -376,6 +456,8 @@ describe('Notes API', () => {
           content: 'Content 1',
           category: 'pros',
           priority: 'high',
+          isPublic: false,
+          tags: [],
         },
         {
           user: testUser._id,
@@ -384,6 +466,8 @@ describe('Notes API', () => {
           content: 'Content 2',
           category: 'cons',
           priority: 'medium',
+          isPublic: false,
+          tags: [],
         },
         {
           user: testUser._id,
@@ -392,6 +476,8 @@ describe('Notes API', () => {
           content: 'Content 3',
           category: 'pros',
           priority: 'low',
+          isPublic: false,
+          tags: [],
         },
       ]);
     });
@@ -411,4 +497,6 @@ describe('Notes API', () => {
       expect(response.body.data.byPriority.low).toBe(1);
     });
   });
-}); 
+});
+
+// [TROUBLESHOOTING] See BACKEND_TROUBLESHOOTING.md for schema mismatch and test data setup issues.

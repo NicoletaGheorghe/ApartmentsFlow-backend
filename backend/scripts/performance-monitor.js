@@ -30,19 +30,19 @@ class PerformanceMonitor {
     try {
       const [performanceRes, cacheRes] = await Promise.all([
         axios.get(`${API_BASE_URL}/api/performance`),
-        axios.get(`${API_BASE_URL}/api/cache/stats`)
+        axios.get(`${API_BASE_URL}/api/cache/stats`),
       ]);
 
       const metrics = {
         timestamp: new Date().toISOString(),
         performance: performanceRes.data,
         cache: cacheRes.data,
-        uptime: process.uptime()
+        uptime: process.uptime(),
       };
 
       this.metrics.push(metrics);
       this.logMetrics(metrics);
-      
+
       return metrics;
     } catch (error) {
       console.error('Error collecting metrics:', error.message);
@@ -64,11 +64,16 @@ class PerformanceMonitor {
     }
 
     const latest = this.metrics[this.metrics.length - 1];
-    const avgResponseTime = this.metrics.reduce((sum, m) => 
-      sum + parseFloat(m.performance.performance.avgResponseTime), 0) / this.metrics.length;
+    const avgResponseTime =
+      this.metrics.reduce(
+        (sum, m) => sum + parseFloat(m.performance.performance.avgResponseTime),
+        0
+      ) / this.metrics.length;
 
     console.log('\n=== PERFORMANCE REPORT ===');
-    console.log(`Monitoring Duration: ${((Date.now() - this.startTime) / 1000 / 60).toFixed(2)} minutes`);
+    console.log(
+      `Monitoring Duration: ${((Date.now() - this.startTime) / 1000 / 60).toFixed(2)} minutes`
+    );
     console.log(`Total Metrics Collected: ${this.metrics.length}`);
     console.log(`Average Response Time: ${avgResponseTime.toFixed(2)}ms`);
     console.log(`Cache Hit Rate: ${(latest.cache.hitRate * 100).toFixed(2)}%`);
@@ -78,7 +83,8 @@ class PerformanceMonitor {
   }
 
   // Start continuous monitoring
-  startMonitoring(intervalMs = 60000) { // Default: 1 minute
+  startMonitoring(intervalMs = 60000) {
+    // Default: 1 minute
     console.log(`Starting performance monitoring...`);
     console.log(`Metrics will be collected every ${intervalMs / 1000} seconds`);
     console.log(`Log file: ${LOG_FILE}`);
@@ -113,7 +119,7 @@ class PerformanceMonitor {
 // CLI interface
 if (require.main === module) {
   const monitor = new PerformanceMonitor();
-  
+
   const args = process.argv.slice(2);
   const command = args[0];
 
@@ -122,25 +128,29 @@ if (require.main === module) {
       const interval = parseInt(args[1]) || 60000;
       monitor.startMonitoring(interval);
       break;
-    
+
     case 'report':
       monitor.generateReport();
       break;
-    
+
     case 'collect':
       monitor.collectMetrics().then(() => {
         monitor.generateReport();
         process.exit(0);
       });
       break;
-    
+
     default:
       console.log('Usage:');
-      console.log('  node performance-monitor.js start [interval_ms]  - Start continuous monitoring');
+      console.log(
+        '  node performance-monitor.js start [interval_ms]  - Start continuous monitoring'
+      );
       console.log('  node performance-monitor.js report               - Generate report from logs');
-      console.log('  node performance-monitor.js collect              - Collect single metrics snapshot');
+      console.log(
+        '  node performance-monitor.js collect              - Collect single metrics snapshot'
+      );
       break;
   }
 }
 
-module.exports = PerformanceMonitor; 
+module.exports = PerformanceMonitor;
