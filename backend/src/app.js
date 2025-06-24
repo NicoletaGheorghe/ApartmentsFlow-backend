@@ -253,6 +253,7 @@ const apartmentRoutes = require('./routes/apartment.routes');
 const favoriteRoutes = require('./routes/favorite.routes');
 const commuteRoutes = require('./routes/commute.routes');
 const userRoutes = require('./routes/user.routes');
+const noteRoutes = require('./routes/note.routes');
 
 /**
  * AI-OPTIMIZED: Route Configuration with Caching
@@ -270,6 +271,7 @@ app.use('/api/apartments', apartmentRoutes);
 app.use('/api/commute', commuteRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/notes', noteRoutes);
 
 /**
  * AI-OPTIMIZED: Static File Serving
