@@ -80,3 +80,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+TROUBLESHOOTING_GUIDE.md
+
+troubleshooting/BACKEND_TROUBLESHOOTING.md
+troubleshooting/TESTING_TROUBLESHOOTING.md
+troubleshooting/FRONTEND_TROUBLESHOOTING.md
+troubleshooting/DATABASE_TROUBLESHOOTING.md
+troubleshooting/SECURITY_TROUBLESHOOTING.md
+troubleshooting/DEPLOYMENT_TROUBLESHOOTING.md
+troubleshooting/PERFORMANCE_TROUBLESHOOTING.md

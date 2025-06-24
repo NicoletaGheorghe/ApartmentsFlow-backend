@@ -12,6 +12,7 @@
 9. [Performance Testing Issues](#performance-testing-issues)
 10. [Integration Testing Issues](#integration-testing-issues)
 11. [Quick Reference](#quick-reference)
+12. [Rate Limiting and Test Payload Validity](#rate-limiting-and-test-payload-validity)
 
 ---
 
@@ -99,6 +100,48 @@ afterAll(async () => {
     console.error('Test database disconnection failed:', error);
   }
 });
+```
+
+---
+
+## Rate Limiting and Test Payload Validity
+
+### 1. Bypassing Rate Limiting in Test Environments
+**Issue**: Tests fail with HTTP 429 errors (Too Many Requests) when hitting authentication or other rate-limited endpoints repeatedly.
+
+**Error**: `429 Too Many Requests` or `Too many authentication attempts, please try again later.`
+
+**Fix**: Always bypass rate limiting middleware in test environments by checking `process.env.NODE_ENV === 'test'` before applying rate limiters in your app and middleware. This ensures tests are never blocked by rate limits, regardless of import order or environment setup.
+
+```javascript
+// Example: Only apply rate limiting in non-test environments
+if (process.env.NODE_ENV !== 'test') {
+  app.use('/api/auth/', authLimiter);
+  app.use(apiLimiter);
+}
+```
+
+### 2. Valid Payloads for Authorization Tests
+**Issue**: Tests for authorization (403 errors) send incomplete or invalid payloads, causing validation errors (400) before the authorization check is reached.
+
+**Error**: `400 Validation Error` instead of expected `403 Forbidden`.
+
+**Fix**: Always send a fully valid payload (all required fields) when testing authorization logic. This ensures the controller's authorization check is hit before validation, and the correct status code is returned.
+
+```javascript
+// ✅ CORRECT: Send valid payload for unauthorized update test
+const validUpdate = {
+  title: 'Hacked',
+  content: 'Hacked content',
+  category: 'general',
+  priority: 'medium',
+  apartmentId: otherApartment._id,
+};
+const response = await request(app)
+  .put(`/api/notes/${otherNote._id}`)
+  .set('Authorization', `Bearer ${authToken}`)
+  .send(validUpdate);
+expect(response.status).toBe(403);
 ```
 
 ---
