@@ -214,7 +214,20 @@ export default function ApartmentDetailPage() {
 
   const { title, description, price, location, bedrooms, bathrooms, area, amenities, images, status } = apartment;
   const { address } = location || {};
-  const imageUrls = images?.map(img => img.url && img.url.trim() !== '' ? `${backendUrl}/${img.url.replace(/\\/g, '/').replace(/^\//, '')}` : '/default-image.png') || ['/default-image.png'];
+  
+  // Ensure we always have valid image URLs
+  const getImageUrl = (imageObj) => {
+    if (!imageObj || !imageObj.url || imageObj.url.trim() === '') {
+      return '/default-image.png';
+    }
+    const cleanUrl = imageObj.url.replace(/\\/g, '/').replace(/^\//, '');
+    return `${backendUrl}/${cleanUrl}`;
+  };
+
+  const imageUrls = images && images.length > 0 
+    ? images.map(img => getImageUrl(img))
+    : ['/default-image.png'];
+    
   const displayAmenities = formatAmenities(amenities);
 
   return (

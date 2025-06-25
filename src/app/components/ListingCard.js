@@ -24,16 +24,24 @@ const ListingCard = ({ apartment }) => {
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
-  let imageUrl = '/default-image.png'; // Default fallback
-  let allImageUrls = [];
-  if (images && images.length > 0) {
-    const mainImage = images.find(img => img && img.isMain) || images[0];
-    if (mainImage && mainImage.url && mainImage.url.trim() !== '') {
-      const cleanUrl = mainImage.url.replace(/\\/g, '/').replace(/^\//, '');
-      imageUrl = `${backendUrl}/${cleanUrl}`;
+  // Ensure we always have a valid image URL
+  const getImageUrl = (imageObj) => {
+    if (!imageObj || !imageObj.url || imageObj.url.trim() === '') {
+      return '/default-image.png';
     }
-    allImageUrls = images.map(img => img.url && img.url.trim() !== '' ? `${backendUrl}/${img.url.replace(/\\/g, '/').replace(/^\//, '')}` : '/default-image.png');
-  }
+    const cleanUrl = imageObj.url.replace(/\\/g, '/').replace(/^\//, '');
+    return `${backendUrl}/${cleanUrl}`;
+  };
+
+  // Get main image URL with proper fallback
+  const imageUrl = images && images.length > 0 
+    ? getImageUrl(images.find(img => img && img.isMain) || images[0])
+    : '/default-image.png';
+
+  // Get all image URLs with proper fallbacks
+  const allImageUrls = images && images.length > 0
+    ? images.map(img => getImageUrl(img))
+    : ['/default-image.png'];
 
   // Status badge styling
   const getStatusBadge = (status) => {
@@ -94,7 +102,7 @@ const ListingCard = ({ apartment }) => {
           fill
           style={{ objectFit: "cover" }}
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          priority={false}
+          priority={true}
         />
         {allImageUrls.length > 1 && (
           <span className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded">{allImageUrls.length} photos</span>
