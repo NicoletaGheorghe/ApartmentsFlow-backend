@@ -83,3 +83,9 @@ bun dev
 ```bash
 git status
 ```
+
+---
+
+## Security Note
+
+This repository has been cleaned to remove any previously committed secrets. All sensitive information has been removed from the git history. Please ensure you use your own environment variables and never commit secrets to version control.
