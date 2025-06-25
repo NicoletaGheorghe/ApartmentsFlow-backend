@@ -105,67 +105,8 @@ const validateApartmentQuery = [
 // Validation middleware for MongoDB ObjectId parameters
 const validateObjectId = [param('id').isMongoId().withMessage('Invalid ID format')];
 
-// Note validation
-const validateNote = (req, res, next) => {
-  const { title, content, apartmentId, category, priority, isPublic, tags } = req.body;
-
-  const errors = [];
-
-  // Required fields
-  if (!title || title.trim().length === 0) {
-    errors.push('Note title is required');
-  } else if (title.length > 100) {
-    errors.push('Note title cannot exceed 100 characters');
-  }
-
-  if (!content || content.trim().length === 0) {
-    errors.push('Note content is required');
-  } else if (content.length > 2000) {
-    errors.push('Note content cannot exceed 2000 characters');
-  }
-
-  if (!apartmentId) {
-    errors.push('Apartment ID is required');
-  }
-
-  // Category validation
-  const validCategories = ['general', 'pros', 'cons', 'visit', 'research', 'comparison', 'other'];
-  if (category && !validCategories.includes(category)) {
-    errors.push('Invalid category');
-  }
-
-  // Priority validation
-  const validPriorities = ['low', 'medium', 'high'];
-  if (priority && !validPriorities.includes(priority)) {
-    errors.push('Invalid priority level');
-  }
-
-  // Tags validation
-  if (tags && Array.isArray(tags)) {
-    if (tags.length > 10) {
-      errors.push('Maximum 10 tags allowed');
-    }
-    tags.forEach((tag) => {
-      if (tag.length > 20) {
-        errors.push('Tag cannot exceed 20 characters');
-      }
-    });
-  }
-
-  if (errors.length > 0) {
-    return res.status(400).json({
-      success: false,
-      message: 'Validation failed',
-      errors,
-    });
-  }
-
-  next();
-};
-
 module.exports = {
   validateApartment,
   validateApartmentQuery,
   validateObjectId,
-  validateNote,
 };

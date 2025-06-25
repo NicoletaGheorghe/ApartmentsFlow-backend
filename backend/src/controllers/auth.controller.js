@@ -1,8 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user.model');
 const { validationResult } = require('express-validator');
-const bcrypt = require('bcrypt');
-const asyncHandler = require('express-async-handler');
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -14,47 +12,47 @@ const generateToken = (id) => {
 // @desc    Register user
 // @route   POST /api/auth/register
 // @access  Public
-const register = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
-
-  // Check if user already exists
-  const userExists = await User.findOne({ email });
-  if (userExists) {
-    return res.status(400).json({
-      success: false,
-      message: 'User already exists',
-    });
+const register = async (req, res, next) => {
+  console.log('DEBUG: Entered register controller, body:', req.body);
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log('DEBUG: express-validator errors:', errors.array());
+    return res.status(400).json({ errors: errors.array().map((e) => e.msg) });
   }
+  try {
+    const { name, email, password } = req.body;
 
-  // Hash password
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
+    // Check if user exists
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
 
-  // Create user
-  const user = await User.create({
-    name,
-    email,
-    password: hashedPassword,
-  });
+    // Create user
+    const user = await User.create({
+      name,
+      email,
+      password,
+    });
 
-  if (user) {
-    res.status(201).json({
-      success: true,
-      data: {
+    if (user) {
+      res.status(201).json({
         _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
-      },
-      token: generateToken(user._id),
-    });
-  } else {
-    res.status(400).json({
-      success: false,
-      message: 'Invalid user data',
-    });
+        token: generateToken(user._id),
+      });
+    }
+  } catch (error) {
+    // Handle Mongoose validation errors in a consistent format
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map((val) => val.message);
+      return res.status(400).json({ errors: messages });
+    }
+    next(error);
   }
-});
+};
 
 // @desc    Login user
 // @route   POST /api/auth/login

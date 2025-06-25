@@ -4,5 +4,4 @@ module.exports = {
   user: require('./user.routes'),
   commute: require('./commute.routes'),
   favorite: require('./favorite.routes'),
-  note: require('./note.routes'),
 };

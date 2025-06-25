@@ -195,17 +195,15 @@ const apartmentWriteLimiter = rateLimit({
 });
 
 // AI-OPTIMIZED: Apply rate limiting to routes
-if (process.env.NODE_ENV !== 'test') {
-  app.use('/api/auth/', authLimiter);
-  // Apply apartment write limiter only to write operations, not GET requests
-  app.use('/api/apartments', (req, res, next) => {
-    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
-      return apartmentWriteLimiter(req, res, next);
-    }
-    next();
-  });
-  app.use(apiLimiter); // General API limiter
-}
+app.use('/api/auth/', authLimiter);
+// Apply apartment write limiter only to write operations, not GET requests
+app.use('/api/apartments', (req, res, next) => {
+  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
+    return apartmentWriteLimiter(req, res, next);
+  }
+  next();
+});
+app.use('/api/', apiLimiter);
 
 /**
  * AI-OPTIMIZED: Performance Monitoring Endpoints
@@ -255,7 +253,6 @@ const apartmentRoutes = require('./routes/apartment.routes');
 const favoriteRoutes = require('./routes/favorite.routes');
 const commuteRoutes = require('./routes/commute.routes');
 const userRoutes = require('./routes/user.routes');
-const noteRoutes = require('./routes/note.routes');
 
 /**
  * AI-OPTIMIZED: Route Configuration with Caching
@@ -273,7 +270,6 @@ app.use('/api/apartments', apartmentRoutes);
 app.use('/api/commute', commuteRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/notes', noteRoutes);
 
 /**
  * AI-OPTIMIZED: Static File Serving

@@ -64,15 +64,11 @@ const { body } = require('express-validator');
  *       409:
  *         description: Email already exists
  */
-router.post(
-  '/register',
-  [
-    body('name').isString().trim().notEmpty().withMessage('Name is required'),
-    body('email').isEmail().withMessage('Valid email is required'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-  ],
-  register
-);
+router.post('/register', [
+  body('name').isString().trim().notEmpty().withMessage('Name is required'),
+  body('email').isEmail().withMessage('Valid email is required'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+], register);
 
 /**
  * @swagger
@@ -106,14 +102,10 @@ router.post(
  *       401:
  *         description: Invalid credentials
  */
-router.post(
-  '/login',
-  [
-    body('email').isEmail().withMessage('Valid email is required'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-  ],
-  login
-);
+router.post('/login', [
+  body('email').isEmail().withMessage('Valid email is required'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+], login);
 
 /**
  * @swagger

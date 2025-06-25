@@ -19,13 +19,9 @@ const contentModeration = require('../middleware/contentModeration').contentMode
 const validateApartmentInput = (req, res, next) => {
   // Convert amenities from comma-separated string to array if needed
   if (req.body.amenities && typeof req.body.amenities === 'string') {
-    req.body.amenities = req.body.amenities
-      .split(',')
-      .map((item) => item.trim())
-      .filter((item) => item.length > 0);
+    req.body.amenities = req.body.amenities.split(',').map(item => item.trim()).filter(item => item.length > 0);
   }
-  const { title, description, price, location, bedrooms, bathrooms, area, amenities, status } =
-    req.body;
+  const { title, description, price, location, bedrooms, bathrooms, area, amenities, status } = req.body;
   const errors = [];
 
   if (!title || title.trim().length < 3) {
@@ -44,25 +40,13 @@ const validateApartmentInput = (req, res, next) => {
   if (!location) {
     errors.push('Location is required');
   } else if (typeof location === 'object') {
-    if (
-      !location.coordinates ||
-      !Array.isArray(location.coordinates) ||
-      location.coordinates.length !== 2
-    ) {
-      errors.push(
-        'Location coordinates are required and must be an array of [longitude, latitude]'
-      );
+    if (!location.coordinates || !Array.isArray(location.coordinates) || location.coordinates.length !== 2) {
+      errors.push('Location coordinates are required and must be an array of [longitude, latitude]');
     }
     if (!location.address) {
       errors.push('Location address is required');
     } else {
-      if (
-        !location.address.street ||
-        !location.address.city ||
-        !location.address.state ||
-        !location.address.zipCode ||
-        !location.address.country
-      ) {
+      if (!location.address.street || !location.address.city || !location.address.state || !location.address.zipCode || !location.address.country) {
         errors.push('Location address must include street, city, state, zipCode, and country');
       }
     }
@@ -114,10 +98,7 @@ const validateApartmentUpdate = (req, res, next) => {
     errors.push('Price must be a positive number');
   }
 
-  if (
-    location !== undefined &&
-    (!location || (typeof location === 'string' && location.trim().length < 3))
-  ) {
+  if (location !== undefined && (!location || (typeof location === 'string' && location.trim().length < 3))) {
     errors.push('Location must be at least 3 characters long');
   }
 

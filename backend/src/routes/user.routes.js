@@ -15,7 +15,9 @@ const {
   updateApartmentNote,
   deleteApartmentNote,
 } = require('../controllers/user.controller');
-
+router.post('/favorites/:id', (req, res) => {
+  res.json({ message: `Hit favorites route with id ${req.params.id}` });
+});
 // Profile routes
 router.get('/profile', protect, getProfile);
 router.put('/profile', protect, updateProfile);
@@ -37,4 +39,4 @@ router.post('/apartments/:id/notes', protect, addApartmentNote);
 router.put('/apartments/:id/notes/:noteId', protect, updateApartmentNote);
 router.delete('/apartments/:id/notes/:noteId', protect, deleteApartmentNote);
 
-module.exports = router;
+module.exports = router; 

@@ -29,16 +29,16 @@ class CacheStats {
   async collectStats() {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/cache/stats`);
-
+      
       const stats = {
         timestamp: new Date().toISOString(),
         ...response.data,
-        uptime: process.uptime(),
+        uptime: process.uptime()
       };
 
       this.stats.push(stats);
       this.logStats(stats);
-
+      
       return stats;
     } catch (error) {
       console.error('Error collecting cache stats:', error.message);
@@ -64,9 +64,7 @@ class CacheStats {
     const avgKeys = this.stats.reduce((sum, s) => sum + s.keys, 0) / this.stats.length;
 
     console.log('\n=== CACHE STATISTICS REPORT ===');
-    console.log(
-      `Monitoring Duration: ${((Date.now() - this.startTime) / 1000 / 60).toFixed(2)} minutes`
-    );
+    console.log(`Monitoring Duration: ${((Date.now() - this.startTime) / 1000 / 60).toFixed(2)} minutes`);
     console.log(`Total Snapshots: ${this.stats.length}`);
     console.log(`Current Hit Rate: ${(latest.hitRate * 100).toFixed(2)}%`);
     console.log(`Average Hit Rate: ${(avgHitRate * 100).toFixed(2)}%`);
@@ -78,8 +76,7 @@ class CacheStats {
   }
 
   // Start continuous monitoring
-  startMonitoring(intervalMs = 30000) {
-    // Default: 30 seconds
+  startMonitoring(intervalMs = 30000) { // Default: 30 seconds
     console.log(`Starting cache statistics monitoring...`);
     console.log(`Stats will be collected every ${intervalMs / 1000} seconds`);
     console.log(`Log file: ${LOG_FILE}`);
@@ -124,7 +121,7 @@ class CacheStats {
 // CLI interface
 if (require.main === module) {
   const cacheStats = new CacheStats();
-
+  
   const args = process.argv.slice(2);
   const command = args[0];
 
@@ -133,11 +130,11 @@ if (require.main === module) {
       const interval = parseInt(args[1]) || 30000;
       cacheStats.startMonitoring(interval);
       break;
-
+    
     case 'report':
       cacheStats.generateReport();
       break;
-
+    
     case 'collect':
       cacheStats.collectStats().then(() => {
         cacheStats.generateReport();
@@ -150,7 +147,7 @@ if (require.main === module) {
         process.exit(0);
       });
       break;
-
+    
     default:
       console.log('Usage:');
       console.log('  node cache-stats.js start [interval_ms]  - Start continuous monitoring');
@@ -161,4 +158,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = CacheStats;
+module.exports = CacheStats; 

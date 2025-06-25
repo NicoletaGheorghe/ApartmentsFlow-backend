@@ -9,33 +9,31 @@ const options = {
       description: 'API documentation for the Apartment Flow application',
       contact: {
         name: 'API Support',
-        email: 'support@apartmentflow.com',
-      },
+        email: 'support@apartmentflow.com'
+      }
     },
     servers: [
       {
         url: process.env.API_URL || 'http://localhost:3000',
-        description: 'Development server',
-      },
+        description: 'Development server'
+      }
     ],
     components: {
       securitySchemes: {
         bearerAuth: {
           type: 'http',
           scheme: 'bearer',
-          bearerFormat: 'JWT',
-        },
-      },
+          bearerFormat: 'JWT'
+        }
+      }
     },
-    security: [
-      {
-        bearerAuth: [],
-      },
-    ],
+    security: [{
+      bearerAuth: []
+    }]
   },
   apis: ['./src/routes/*.js'], // Path to the API routes
 };
 
 const specs = swaggerJsdoc(options);
 
-module.exports = specs;
+module.exports = specs; 

@@ -8,13 +8,13 @@
 // AI-OPTIMIZED: Google Maps client for commute calculations
 const googleMapsClient = require('./googleMapsClient');
 
-// Simple asyncHandler utility
-const asyncHandler = (fn) => (req, res, next) => {
-  Promise.resolve(fn(req, res, next)).catch(next);
-};
+// AI-OPTIMIZED: JWT utilities for token management
+const jwtUtils = require('./jwt');
 
 module.exports = {
   // AI-OPTIMIZED: External API clients
   googleMapsClient,
-  asyncHandler,
+
+  // AI-OPTIMIZED: Authentication utilities
+  jwtUtils,
 };

@@ -6,8 +6,6 @@ const User = require('../models/user.model');
 const Apartment = require('../models/apartment.model');
 require('./setup'); // Ensure MongoDB connection is established
 
-jest.setTimeout(30000);
-
 let testUser;
 let authToken;
 
@@ -63,8 +61,8 @@ describe('App', () => {
             state: 'Test State',
             city: 'Testville',
             street: '123 Main St',
-            zipCode: '12345',
-          },
+            zipCode: '12345'
+          }
         },
         bedrooms: 2,
         bathrooms: 1,
