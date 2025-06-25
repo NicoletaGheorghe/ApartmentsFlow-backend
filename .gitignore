@@ -81,8 +81,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-TROUBLESHOOTING_GUIDE.md
-
+# Documentation to exclude from repo
+# Keep general troubleshooting guide but exclude specific ones
 troubleshooting/BACKEND_TROUBLESHOOTING.md
 troubleshooting/TESTING_TROUBLESHOOTING.md
 troubleshooting/FRONTEND_TROUBLESHOOTING.md
@@ -90,3 +90,15 @@ troubleshooting/DATABASE_TROUBLESHOOTING.md
 troubleshooting/SECURITY_TROUBLESHOOTING.md
 troubleshooting/DEPLOYMENT_TROUBLESHOOTING.md
 troubleshooting/PERFORMANCE_TROUBLESHOOTING.md
+
+# Performance and optimization files (may contain sensitive data)
+Optimising Processing Speed.md
+backend/Optimising Processing Speed.md
+
+# AI optimization files (may contain sensitive implementation details)
+AI_OPTIMIZATION_SUMMARY.md
+backend/AI_OPTIMIZATION_SUMMARY.md
+
+# Keep these in repo (useful for team collaboration):
+# - TROUBLESHOOTING_GUIDE.md (general guide)
+# - AI_ASSISTANT_GUIDE.md (useful for other developers)
