@@ -6,25 +6,53 @@ const cloudinary = require('cloudinary');
 
 // AI-OPTIMIZED: Query builder for apartment filters with role-based access
 const buildApartmentQuery = (req) => {
+  let query = {};
   // Handle user role-based access
   if (req.user) {
     if (req.user.role === 'admin') {
       // Admin sees all listings
       return {};
-    } else if (req.user.role === 'agent') {
-      // Agent sees public listings and their own private listings
-      return {
-        $or: [{ isPublic: true }, { owner: req.user._id }],
-      };
-    } else {
-      // Regular users see only public listings
-      return { isPublic: true };
-    }
+    } 
+       // Agent and user see public listings and their own private listings
+     query.$or = [
+      { isPublic: true },
+      { owner: req.user._id },
+    ];
   } else {
     // Unauthenticated users see only public listings
-    return { isPublic: true };
+    query.isPublic = true ;
   }
+  if (req.query.title) {
+    query.title = { $regex: req.query.title, $options: 'i' };
+  }
+
+  if (req.query.isPublic !== undefined) {
+    query.isPublic = req.query.isPublic === 'true';
+  }
+
+  if (req.query.priceMin) {
+    query.price = { ...query.price, $gte: Number(req.query.priceMin) };
+  }
+
+  if (req.query.priceMax) {
+    query.price = { ...query.price, $lte: Number(req.query.priceMax) };
+  }
+
+  if (req.query.bedrooms) {
+    query.bedrooms = Number(req.query.bedrooms);
+  }
+
+  if (req.query.city) {
+    query['location.city'] = { $regex: req.query.city, $options: 'i' };
+  }
+
+  if (req.query.status) {
+    query.status = req.query.status;
+  }
+
+  return query;
 };
+
 
 // @desc    Get all apartments with caching
 // @route   GET /api/apartments

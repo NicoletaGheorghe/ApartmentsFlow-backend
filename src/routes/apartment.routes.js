@@ -117,7 +117,8 @@ router.get('/', protect, validateApartmentQuery, getApartments); // All listings
 router.get('/:id', protect, getApartment);
 router.post('/', protect, upload.array('images', 8), validateApartmentInput, createApartment);
 router.post('/json', protect, validateApartmentInput, createApartment); // JSON data without file uploads
-router.put('/:id', protect, validateApartmentUpdate, updateApartment);
+router.put('/:id', protect, upload.array('images', 8), validateApartmentUpdate, updateApartment);
+
 router.delete('/:id', protect, deleteApartment);
 
 // Autofill listing from URL

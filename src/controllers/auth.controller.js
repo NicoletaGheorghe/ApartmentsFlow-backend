@@ -20,19 +20,23 @@ const register = async (req, res, next) => {
     return res.status(400).json({ errors: errors.array().map((e) => e.msg) });
   }
   try {
-    const { name, email, password } = req.body;
+    console.log('Register payload:', req.body);
+    const { name, email, password, profileImage } = req.body;
 
     // Check if user exists
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ error: 'User already exists' });
     }
+   const DEFAULT_AVATAR_URL = "https://res.cloudinary.com/dm2lc3vso/image/upload/v1750940090/default-avatar_dlerrd.png"
 
     // Create user
     const user = await User.create({
       name,
       email,
       password,
+      profileImage: profileImage?.trim() ? profileImage : DEFAULT_AVATAR_URL,
+
     });
 
     if (user) {
